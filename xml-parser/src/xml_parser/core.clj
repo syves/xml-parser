@@ -1,7 +1,7 @@
 (ns xml-parser.core)
 
 (require '[clojure.java.io :as io])
-(require '[clojure.xml :as xml]) //data.xml
+(require '[clojure.xml :as xml])
 (require '[clojure.zip :as zip])
 (require '[clojure.data.zip.xml :as zip-xml])
 
@@ -23,8 +23,10 @@
 
 
   (def filepath "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/update-file.xml")
+
   (defn zip-str [file]
     (zip/xml-zip
-      (xml/parse file)))
+      (xml/parse
+        (io/input-stream (java.io.File. file)))))
   (def updates (zip-str filepath))
 (println updates)
