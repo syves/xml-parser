@@ -1,32 +1,66 @@
-(ns xml-parser.core)
+(ns xml-parser.core
 
-(require '[clojure.java.io :as io])
-(require '[clojure.xml :as xml])
-(require '[clojure.zip :as zip])
-(require '[clojure.data.zip.xml :as zip-xml])
+(:require [clojure.java.io :as io]
+          [clojure.xml :as xml]
+          [clojure.zip :as zip]
+          [clojure.data.xml :refer :all]
+          [clojure.data.zip.xml :as zip-xml]
+          [clojure.pprint :refer [pprint]]))
 
-  (defn meta->map
-  [root]
-  (into {}
-        (for [m (zip-xml/xml-> root :head :meta)]
-          [(keyword (zip-xml/attr m :type))
-           (zip-xml/text m)])))
+(def base "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/")
+(def gzip-filepath (str base "update-file.xml.gz"))
+(def test-str (str base "test-str.xml"))
+(def test-dtd (str base "with-dtd.xml"))
 
-(defn nzb->map
-  [input]
-  (let [root (-> input
-                 io/input-stream
-                 xml/parse
-                 zip/xml-zip)]
-    {:meta  (meta->map root)
-     :files (mapv file->map (zip-xml/xml-> root :file))}))
+;returns a buffer reader
+(defn gzip-reader [filename]
+    (-> filename
+        ;java.io.File, passing each arg to as-file
+        io/file
+        ;Attempts to coerce its argument into an open java.io.InputStream.
+        io/input-stream
+        ;Reads text from a character-input stream, buffering characters so as to provide for the efficient reading of characters, arrays, and lines.
+        io/reader))
+
+(def rdr (gzip-reader test-str))
+
+(defn tree [reader](parse reader))
+
+;;Returns a lazy tree of the xml/element struct-map,
+;;which has the keys :tag, :attrs, and :content. and accessor fns tag, attrs, and content.
+(:tag (parse (io/reader (io/input-stream (io/file test-dtd)))))
+(parse (io/reader (io/input-stream (io/file gzip-filepath))))
+
+(def new-tree (parse (io/reader (io/input-stream (io/file test-dtd)))))
+(:tag new-tree)
 
 
-  (def filepath "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/update-file.xml")
+(defn tree [file]
+    (xml/parse (gzip-reader file)))
 
-  (defn zip-str [file]
-    (zip/xml-zip
-      (xml/parse
-        (io/input-stream (java.io.File. file)))))
-  (def updates (zip-str filepath))
-(println updates)
+    ;;Returns a zipper for xml elements, easily filterable
+    ;zip/xml-zip
+
+(defn get-values-from-tree
+  [tree]
+  (map (fn [person]
+         (->> (filter #(= (:tag %) :member)
+              (:content person)
+              (apply str))))
+       (:content tree)))
+
+;(take 10 (get-values-from-tree new-tree))
+(->> new-tree
+     get-values-from-file)
+     (take 10));; remove (take 100000) to get the full sequence
+
+;;var to pass around
+(def updates-tree (xml-to-tree filepath))
+
+;;TODO for each child 'member' in root, get its values.. and create a clojure vector for each?
+;;2. create an sql query for each hug or HoneySql
+(def tree (tree-root filepath))
+
+(->{:tag :root :content [{:tag :member :content ["firstname", "last name", "date-of-birth", "phone"]}] }
+updtes-tree
+)
