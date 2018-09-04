@@ -8,4 +8,5 @@
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/data.xml "0.0.8"]
-                 [proto-repl "0.3.1"]])
+                 [proto-repl "0.3.1"]
+                 [org.apache.commons/commons-compress "1.18"]])
