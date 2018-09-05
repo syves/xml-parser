@@ -12,12 +12,20 @@
 
 (def base "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/")
 (def gzip-filepath (str base "update-file.xml.gz"))
-(def filepath (str base "update-file.xml"))
-(def test-str (str base "test-str.xml"))
-(def test-dtd (str base "with-dtd.xml"))
-(def wiki "/Users/syves/Downloads/enwiki-latest-abstract.xml.gz")
-(def small-whitespace (str base "small-whitespace.xml"))
-(def with-bom "/Users/syves/github.com/syves/largeFiles/withBom.xml")
+(def with-bom-gz (str base "withBom.xml.gz"))
+;(def small-whitespace (str base "small-whitespace.xml"))
+(def members (str base "just-members.xml.gz"))
+
+(defn gzip-reader [filename]
+    (-> filename
+        io/file
+        io/input-stream
+        GZIPInputStream.
+        io/reader))
+
+;;;;Note cannot read a gziped file without gzipreader
+;XMLStreamException ParseError at [row,col]:[1,1]
+;Message: Content is not allowed in prolog.
 
 ;https://gist.github.com/biggert/6453648
 (def bom-array
@@ -27,39 +35,33 @@
                ByteOrderMark/UTF_32BE
                ByteOrderMark/UTF_32LE]))
 
+;Note does not strip whitespace 
 (defn bom-reader
-  "removes BOM utf-8"
+  "removes BOMs"
   [file]
-    (-> file
-        io/file
-        io/input-stream
-        GZIPInputStream.
-        ;only skips utf 8
-        (BOMInputStream. false)
-        io/reader ))
-    (parse (io/reader (BOMInputStream. (GZIPInputStream. (io/input-stream (io/file gzip-filepath))) false)))
+    ;Reads text from a character-input stream, buffering characters so as to provide for the efficient reading of characters, arrays, and lines.
+    (io/reader
+      ;Constructs a new BOM InputStream that excludes the specified BOMs.
+      (BOMInputStream.
+        ;Creates a new input stream with the specified buffer size.
+        (GZIPInputStream.
+          (io/input-stream
+            (io/file
+               file)))
+        false
+        bom-array)))
 
-
-
-(parse (bom-reader gzip-filepath))
-
-(parse (bom-reader wiki))
-(parse (bom-reader small-whitespace))
-
-(parse (bom-reader with-bom))
-
+;(parse (bom-reader gzip-filepath)) ;;outOfMemboryError
+;why does this work?
+(def bom-free-rdr (bom-reader gzip-filepath))
 
 ;;Returns a lazy tree of the xml/element struct-map,
 ;;which has the keys :tag, :attrs, and :content. and accessor fns tag, attrs, and content.
-(:tag (parse (io/reader (io/input-stream (io/file test-dtd)))))
+(def x (parse bom-free-rdr))
 
-;;TODO zip/xml
+(:tag x)
 
-(def new-tree (parse (io/reader (io/input-stream (io/file test-dtd)))))
-(:tag new-tree)
-
-    ;;Returns a zipper for xml elements, easily filterable
-    ;zip/xml-zip
+;;Returns a zipper for xml elements, easily filterable
 
 (defn get-values-from-tree
   [tree]
@@ -68,6 +70,8 @@
               (:content person)
               (apply str))))
        (:content tree)))
+
+(get-values-from-tree x)
 
 ;(take 10 (get-values-from-tree new-tree))
 (->> new-tree
