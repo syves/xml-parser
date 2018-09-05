@@ -37,9 +37,10 @@
         ;only skips utf 8
         (BOMInputStream. false)
         io/reader ))
+    (parse (io/reader (BOMInputStream. (GZIPInputStream. (io/input-stream (io/file gzip-filepath))) false)))
 
 
-(parse (bom-reader test-dtd))
+
 (parse (bom-reader gzip-filepath))
 
 (parse (bom-reader wiki))
