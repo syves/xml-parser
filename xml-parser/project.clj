@@ -9,8 +9,5 @@
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [proto-repl "0.3.1"]
-                 ;[org.apache.commons.io "2.5"]
-                 [commons-io/commons-io "2.5"]
-                 ;[org.apache.commons.io.ByteOrderMark "2.5"]
-                 ]
+                 [commons-io/commons-io "2.5"]]
   :main xml-parser.core)
