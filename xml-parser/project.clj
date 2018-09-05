@@ -3,10 +3,14 @@
   :url ""
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"] ;from 1.8
                  [org.clojure/java.jdbc "0.7.8"]
                  [org.postgresql/postgresql "9.4-1201-jdbc41"]
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [proto-repl "0.3.1"]
-                 [org.apache.commons/commons-compress "1.18"]])
+                 ;[org.apache.commons.io "2.5"]
+                 [commons-io/commons-io "2.5"]
+                 ;[org.apache.commons.io.ByteOrderMark "2.5"]
+                 ]
+  :main xml-parser.core)
