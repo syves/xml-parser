@@ -61,48 +61,23 @@
 ;      parse
 ;    ))
 
- ; only works on small trees because it reads the whole thing.
-
-(defn test-extract [tree]
-                  (->> tree
-                       ;(filter #(= (:tag %) :member))
-                       :content ;members content
-                       (first) ;first member
-                       :content :tag :content ;member content
-                       ;(map fn [elem] (->> elem :content))
-                      ;               (filter #(= (:tag %)
-                      ;                           [:firstname,
-                      ;                           :lastname,
-                      ;                           :date-of-birth,
-                      ;                           :phone])))))
-                      ;               {}:tag :content}
-                      ;print-str
-                    ))
-
-(test-extract x)
-
 (defn get-values-from-tree
-  [tree]; this is a map
+  [tree]
   (->> tree
-       (map (fn [member] ;members.map
-                (->> member
-                ;(filter #(= (:tag %) :members)) ;is this necesary?
-                     :content ;4 xml elements
-                     ;:tag
-                     ;(map (fn [elem]
-                ;         (->> elem
-                ;              (zipMap :tag :content))
-                ;              :content
-                ;              (apply str))))))
-                )))))
+       ;memory problem!
+       :content
+       (map (fn [member]
+                (reduce (fn [acc elem]
+                            (assoc acc
+                                   (:tag elem)
+                                   (first (:content elem))))
+                        {}
+                        (:content member))
+                               ))
+                               ))
 
 (get-values-from-tree x)
 
-;(take 10 (get-values-from-tree new-tree))
 (->> x
-     get-values-from-file)
+     get-values-from-tree)
      (take 10));; remove (take 100000) to get the full sequence
-
-(->> {:tag :root :content [{:tag :member :content
-  ["firstname", "last name", "date-of-birth", "phone"]}] }
-x)
