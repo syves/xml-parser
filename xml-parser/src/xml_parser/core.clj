@@ -16,7 +16,7 @@
 (def gzip-filepath (str base "update-file.xml.gz"))
 (def with-bom-gz (str base "withBom.xml.gz"))
 ;(def small-whitespace (str base "small-whitespace.xml"))
-(def members (str base "just-members.xml.gz"))
+(def members-gz (str base "just-members.xml.gz"))
 
 (defn gzip-reader [filename]
     (-> filename
@@ -24,10 +24,6 @@
         io/input-stream
         GZIPInputStream.
         io/reader))
-
-;;;;Note cannot read a gziped file without gzipreader
-;XMLStreamException ParseError at [row,col]:[1,1]
-;Message: Content is not allowed in prolog.
 
 ;https://gist.github.com/biggert/6453648
 (def bom-array
@@ -53,54 +49,59 @@
         false
         bom-array)))
 
-;(parse (bom-reader gzip-filepath)) ;;outOfMemboryError
-;why does this work?
-(def bom-free-rdr (bom-reader gzip-filepath))
+;(def bom-free-rdr (bom-reader gzip-filepath))
+(def bom-free-rdr (bom-reader members-gz))
 
 ;;Returns a lazy tree of the xml/element struct-map,
 ;;which has the keys :tag, :attrs, and :content. and accessor fns tag, attrs, and content.
 (def x (parse bom-free-rdr))
-
 
 ;(with-open [b-reader (bom-reader gzip-filepath)]
 ;  (->> b-reader
 ;      parse
 ;    ))
 
-(:tag x)
-(:content (:tag x))
+ ; only works on small trees because it reads the whole thing.
 
-;;Returns a zipper for xml elements, easily filterable
+(defn test-extract [tree]
+                  (->> tree
+                       ;(filter #(= (:tag %) :member))
+                       :content ;members content
+                       (first) ;first member
+                       :content :tag :content ;member content
+                       ;(map fn [elem] (->> elem :content))
+                      ;               (filter #(= (:tag %)
+                      ;                           [:firstname,
+                      ;                           :lastname,
+                      ;                           :date-of-birth,
+                      ;                           :phone])))))
+                      ;               {}:tag :content}
+                      ;print-str
+                    ))
+
+(test-extract x)
 
 (defn get-values-from-tree
   [tree]; this is a map
-  (map (fn [member]
-         (->> x
-              :content
-              (filter #(= (:tag %) :members)
-              (children)
+  (->> tree
+       (map (fn [member] ;members.map
+                (->> member
+                ;(filter #(= (:tag %) :members)) ;is this necesary?
+                     :content ;4 xml elements
+                     ;:tag
+                     ;(map (fn [elem]
+                ;         (->> elem
+                ;              (zipMap :tag :content))
+                ;              :content
+                ;              (apply str))))))
+                )))))
 
-              ;emit memmber?
-              ;(filter #(= (:content %) ["firstname", "last name", "date-of-birth", "phone"])
-              ;:content
-              (apply str)
-              )))
-              (:content tree)
-       ))
-
-(take 10 (get-values-from-tree x))
-
+(get-values-from-tree x)
 
 ;(take 10 (get-values-from-tree new-tree))
 (->> x
      get-values-from-file)
      (take 10));; remove (take 100000) to get the full sequence
-
-
-
-;;TODO for each child 'member' in root, get its values.. and create a clojure vector for each?
-;;2. create an sql query for each hug or HoneySql
-(def tree (tree-root filepath))
 
 (->> {:tag :root :content [{:tag :member :content
   ["firstname", "last name", "date-of-birth", "phone"]}] }
