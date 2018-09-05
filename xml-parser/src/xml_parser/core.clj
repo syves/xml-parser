@@ -5,12 +5,43 @@
           [clojure.zip :as zip]
           [clojure.data.xml :refer :all]
           [clojure.data.zip.xml :as zip-xml]
-          [clojure.pprint :refer [pprint]]))
+          [clojure.pprint :refer [pprint]])
+          (:import org.apache.commons.io.input.BOMInputStream
+                   org.apache.commons.io.ByteOrderMark))
 
 (def base "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/")
 (def gzip-filepath (str base "update-file.xml.gz"))
 (def test-str (str base "test-str.xml"))
 (def test-dtd (str base "with-dtd.xml"))
+(def wiki "/Users/syves/Downloads/enwiki-latest-abstract.xml.gz")
+(def small-whitespace (str base "small-whitespace.xml"))
+;https://gist.github.com/biggert/6453648
+(def bom-array
+  (into-array [ByteOrderMark/UTF_16LE
+               ByteOrderMark/UTF_16BE
+               ByteOrderMark/UTF_8
+               ByteOrderMark/UTF_32BE
+               ByteOrderMark/UTF_32LE]))
+
+            ;   BOMInputStream bomIn = new BOMInputStream(in);
+            ;    if (bomIn.hasBOM()) {
+            ;        // has a UTF-8 BOM
+            ;    }
+
+(defn bom-reader
+  "Returns a BOM contextual reader with the proper encoding set (= BOM)"
+  [file]
+    (-> file
+        io/input-stream
+        BOMInputStream.
+        io/reader ))
+
+(parse (bom-reader test-dtd))
+(parse (bom-reader gzip-filepath))
+(parse (bom-reader wiki))
+(parse (bom-reader small-whitespace))
+
+;maybe I need to remove the bom instead of changing the encoding?
 
 ;returns a buffer reader
 (defn gzip-reader [filename]
@@ -31,9 +62,12 @@
 (:tag (parse (io/reader (io/input-stream (io/file test-dtd)))))
 (parse (io/reader (io/input-stream (io/file gzip-filepath))))
 
+(parse (io/reader (io/input-stream (io/file wiki))))
+
+;;TODO zip/xml
+
 (def new-tree (parse (io/reader (io/input-stream (io/file test-dtd)))))
 (:tag new-tree)
-
 
 (defn tree [file]
     (xml/parse (gzip-reader file)))
@@ -61,6 +95,6 @@
 ;;2. create an sql query for each hug or HoneySql
 (def tree (tree-root filepath))
 
-(->{:tag :root :content [{:tag :member :content ["firstname", "last name", "date-of-birth", "phone"]}] }
-updtes-tree
-)
+(->{:tag :root :content [{:tag :member :content
+  ["firstname", "last name", "date-of-birth", "phone"]}] }
+updtes-tree)
