@@ -49,16 +49,14 @@
         false
         bom-array)))
 
-;(def bom-free-rdr (bom-reader gzip-filepath))
-;(def bom-free-rdr (bom-reader members-gz))
-
 ;;Returns a lazy tree of the xml/element struct-map,
 ;;which has the keys :tag, :attrs, and :content. and accessor fns tag, attrs, and content.
-(def x (parse bom-free-rdr))
 
-(with-open [rdr (bom-reader gzip-filepath)]
-  (doall
-      (take 4
+;op takes 75 sec
+(def list-map
+  (with-open [rdr (bom-reader gzip-filepath)]
+    (doall
+      (take 1500000
         (->> rdr
              parse
              :content
@@ -68,26 +66,9 @@
                                          (:tag elem)
                                          (first (:content elem))))
                               {}
-                              (:content member))
-   ))))))
+                              (:content member)))))))))
 
-(defn tree-to-list
-  [tree]
-  (->> tree
-       ;memory problem!
-       :content
-       (map (fn [member]
-                (reduce (fn [acc elem]
-                            (assoc acc
-                                   (:tag elem)
-                                   (first (:content elem))))
-                        {}
-                        (:content member))
-                               ))
-                               ))
+;for each map create a sql query
+(map f list-map)
 
-(def list-of-person-map (tree-to-list x))
-
-(->> x
-     tree-to-list)
-     (take 10));; remove (take 100000) to get the full sequence
+;output query to file?
