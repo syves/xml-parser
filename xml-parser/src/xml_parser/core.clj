@@ -14,18 +14,7 @@
 
 (def base "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/")
 (def gzip-filepath (str base "update-file.xml.gz"))
-(def with-bom-gz (str base "withBom.xml.gz"))
-;(def small-whitespace (str base "small-whitespace.xml"))
-(def members-gz (str base "just-members.xml.gz"))
 
-(defn gzip-reader [filename]
-    (-> filename
-        io/file
-        io/input-stream
-        GZIPInputStream.
-        io/reader))
-
-;https://gist.github.com/biggert/6453648
 (def bom-array
   (into-array [ByteOrderMark/UTF_16LE
                ByteOrderMark/UTF_16BE
@@ -37,11 +26,8 @@
 (defn bom-reader
   "removes BOMs"
   [file]
-    ;Reads text from a character-input stream, buffering characters so as to provide for the efficient reading of characters, arrays, and lines.
     (io/reader
-      ;Constructs a new BOM InputStream that excludes the specified BOMs.
       (BOMInputStream.
-        ;Creates a new input stream with the specified buffer size.
         (GZIPInputStream.
           (io/input-stream
             (io/file
@@ -49,15 +35,13 @@
         false
         bom-array)))
 
-;;Returns a lazy tree of the xml/element struct-map,
-;;which has the keys :tag, :attrs, and :content. and accessor fns tag, attrs, and content.
-
 ;op takes 75 sec
 (def list-map
   (with-open [rdr (bom-reader gzip-filepath)]
     (doall
       (take 1500000
         (->> rdr
+             ;;Returns a lazy tree of the xml/element struct-map
              parse
              :content
              (map (fn [member]
