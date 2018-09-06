@@ -52,7 +52,28 @@
                               {}
                               (:content member)))))))))
 
-;for each map create a sql query
-(map f list-map)
+;TODO for each map create a sql query
+
+;({:firstname "00226501",
+;:lastname "MCGREWJR",
+;:date-of-birth "1936-02-01",
+;:phone "9796740198"}...)
+
+"""CASE
+		WHEN fname =  p.fname;
+		AND lname = p.lname;
+		AND dob = p.dob;
+		AND phone != p.phone THEN
+			UPDATE person"""
+
+(map (fn [rec]
+          (str
+            (format "CASE WHEN fname = %s;" (get rec :firstname ""))
+            (format " AND lname = %s;" (get rec :lastname ""))
+            (format " AND dob = %s;"(get rec :date-of-birth ""))
+            (format " AND phone != %s THEN;" (get rec :phone ""))
+
+            ))
+      (take 3 list-map))
 
 ;output query to file?
