@@ -59,12 +59,21 @@
 ;:date-of-birth "1936-02-01",
 ;:phone "9796740198"}...)
 
-"""CASE
-		WHEN fname =  p.fname;
-		AND lname = p.lname;
-		AND dob = p.dob;
-		AND phone != p.phone THEN
-			UPDATE person"""
+"""UPDATE person
+      SET phone='5859012134'
+      WHERE
+        fname='JIARA'
+        AND lname='HERTZEL'
+        AND dob='1935-06-05'
+        AND phone!='5859012134';
+    INSERT INTO
+      person(fname, lname, dob, phone)
+    SELECT 'JIARA','HERTZEL','1935-06-05','5859012134'
+       WHERE NOT EXISTS (SELECT * FROM person
+                          WHERE
+                            fname='JIARA'
+                            AND lname='HERTZEL'
+                            AND dob='1935-06-05');"""
 
 (map (fn [rec]
           (str
