@@ -2,6 +2,10 @@
 
 A Clojure library designed to ... well, that part is up to you.
 
+##notes
+upsert with a where clause is not yet supported. Pr is still open.
+update or insert may have a race condition. Perhaps a table lock could be used.
+
 ## Set up a POSTGRES database at the top level
 
 #intialize and start the server

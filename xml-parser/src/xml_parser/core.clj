@@ -75,6 +75,11 @@
                             AND lname='HERTZEL'
                             AND dob='1935-06-05');"""
 
+;inserts are rare in this example case but they emit selects which could slow down the process.
+;UPDATE tableName SET col1 = value WHERE colX = arg1 and colY = arg2;
+   ;IF NOT FOUND THEN
+   ;INSERT INTO tableName values (value, arg1, arg2);
+
 (map (fn [rec]
           (str
             (format "CASE WHEN fname = %s;" (get rec :firstname ""))
