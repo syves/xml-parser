@@ -69,9 +69,9 @@
 (map (fn [rec]
           (str
             (format "CASE WHEN fname = %s;" (get rec :firstname ""))
-            (format " AND lname = %s;" (get rec :lastname ""))
-            (format " AND dob = %s;"(get rec :date-of-birth ""))
-            (format " AND phone != %s THEN;" (get rec :phone ""))
+            (format "AND lname = %s;" (get rec :lastname ""))
+            (format "AND dob = %s;"(get rec :date-of-birth ""))
+            (format "AND phone != %s THEN UPDATE foo;" (get rec :phone ""))
 
             ))
       (take 3 list-map))
