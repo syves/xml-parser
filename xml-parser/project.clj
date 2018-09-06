@@ -9,5 +9,6 @@
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [proto-repl "0.3.1"]
-                 [commons-io/commons-io "2.5"]]
+                 [commons-io/commons-io "2.5"]
+                 [com.layerware/hugsql "0.4.9"]]
   :main xml-parser.core)
