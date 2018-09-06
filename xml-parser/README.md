@@ -19,6 +19,9 @@ psql testdb --file="/Users/syves/github.com/syves/largeFiles/person.sql"
 #check number of inserts
 testdb=# select count(`*`) from person;
 
+#create index took 4 mins and is not reccomended for db with frequent inserts and updates!
+testdb=# create index person_idx on person (fname, lname, dob);
+
 ## License
 Copyright © 2018 FIXME
 Distributed under the Eclipse Public License either version 1.0 or (at
