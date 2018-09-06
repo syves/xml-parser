@@ -50,18 +50,28 @@
         bom-array)))
 
 ;(def bom-free-rdr (bom-reader gzip-filepath))
-(def bom-free-rdr (bom-reader members-gz))
+;(def bom-free-rdr (bom-reader members-gz))
 
 ;;Returns a lazy tree of the xml/element struct-map,
 ;;which has the keys :tag, :attrs, and :content. and accessor fns tag, attrs, and content.
 (def x (parse bom-free-rdr))
 
-;(with-open [b-reader (bom-reader gzip-filepath)]
-;  (->> b-reader
-;      parse
-;    ))
+(with-open [rdr (bom-reader gzip-filepath)]
+  (doall
+      (take 4
+        (->> rdr
+             parse
+             :content
+             (map (fn [member]
+                      (reduce (fn [acc elem]
+                                  (assoc acc
+                                         (:tag elem)
+                                         (first (:content elem))))
+                              {}
+                              (:content member))
+   ))))))
 
-(defn get-values-from-tree
+(defn tree-to-list
   [tree]
   (->> tree
        ;memory problem!
@@ -76,8 +86,8 @@
                                ))
                                ))
 
-(get-values-from-tree x)
+(def list-of-person-map (tree-to-list x))
 
 (->> x
-     get-values-from-tree)
+     tree-to-list)
      (take 10));; remove (take 100000) to get the full sequence
