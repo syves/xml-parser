@@ -10,5 +10,5 @@
                  [org.clojure/data.xml "0.0.8"]
                  [proto-repl "0.3.1"]
                  [commons-io/commons-io "2.5"]
-                 [com.layerware/hugsql "0.4.9"]]
+                 [honeysql "0.9.3"]]
   :main xml-parser.core)
