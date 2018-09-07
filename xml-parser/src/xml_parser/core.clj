@@ -65,20 +65,45 @@
 
 ;TODO for each map create a sql query
 
-;format turns maps into clojure.java.jdbc-compatible, parameterized SQL:
-;(sql/raw ["CAST ('#sql/param (format-date "1935-06-05") AS DATE)'"])
 (defn format-date [varrchar] (str/join (str/split varrchar #"-")))
-(def str-date (format-date "1935-06-05"))
 
-(def wip-query (-> (select :fname :lname :dob :phone)
-                          (from :person)
-                          (where [:and
-                                    [:= :fname "JIARA"]
-                                    [:= :lname "HERTZEL"]
-                                    [:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
-                                    [:<> :phone "5859012188"]])
-                          (sql/format)))
-;["SELECT fname, lname, dob, phone FROM person WHERE (fname = ? AND lname = ? AND dob = CAST ('str-date AS DATE)' AND phone <> ?)" "JIARA" "HERTZEL" "5859012188"]
+(def str-date (format-date "1935-06-05"))
+(sql/raw ["CAST ('#sql/param str-date AS DATE)'"])
+(sql/format (sql/raw ["CAST ('#sql/param str-date AS DATE)'"]))
+(sql/raw ["CAST ('#sql/param str-date AS DATE)'"])
+
+WHERE NOT EXISTS (SELECT * FROM person
+                   WHERE
+                     fname='JIARA'
+                     AND lname='HERTZEL'
+                     AND dob='1935-06-05')
+
+(sql/format {:exists })
+
+(where [:= :exists {:select *
+                      :from :person
+                      :where
+                      :fname "shakrah"
+                      :lname "yves"
+                    }
+              false])
+}
+;works but returns no result ?!
+(jdbc/query db-spec
+    (sql/format {:union [(-> (helpers/update :person)
+                             (sset {:phone "1112225554"})
+                             (where [:and
+                                       [:= :fname "shakrah"]
+                                       [:= :lname "yves"]
+                                       [:<> :phone "1234567899"]
+                                       ]))
+                            ;if update fails then insert
+                         (-> (insert-into :person)
+                             (values [{:fname "shakrah"
+                                       :lname "yves"
+                                       :phone "11122244444"}]))]
+                }))
+    ;(lock :mode :update)
 
 (jdbc/query db-spec
   (-> (select :fname :lname :dob :phone)
@@ -86,10 +111,11 @@
       (where [:and
                 [:= :fname "JIARA"]
                 [:= :lname "HERTZEL"]
-                ;[:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
+                [:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
                 [:<> :phone "5859012188"]])
-      (sql/format)))
+      sql/format))
 ;--> ({:fname "JIARA", :lname "HERTZEL", :dob #inst "1935-06-04T23:00:00.000-00:00", :phone "5859012134"})
+
 
 (def testSQLstr
   "UPDATE person
