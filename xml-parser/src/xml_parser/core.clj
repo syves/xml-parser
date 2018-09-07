@@ -74,36 +74,44 @@
 (sql/format (sql/raw ["CAST ('#sql/param str-date AS DATE)'"]))
 (sql/raw ["CAST ('#sql/param str-date AS DATE)'"])
 
-(sql/raw ["IF NOT FOUND THEN"])
-;works but returns no result ?!
-(jdbc/query db-spec
-    (sql/format
-                        (-> (helpers/update :person)
-                            (sset {:phone "1112225554"})
-                            (where [:and
-                                       [:= :fname "shakrah"]
-                                       [:= :lname "yves"]
-                                       [:<> :phone "1234567899"]
-                                       ])
-                            ;if update fails then insert
-                         ;(->
-                            (insert-into :person)
-                            (values [{:fname "shakrah"
-                                       :lname "yves"
-                                       :phone "11122244444"}]))
+;this will not work because there is no support for where clause on constraint.
+;(jdbc/query db-spec
+;  (-> (insert-into :person)
+;      (values [{:fname "shakrah"
+;                :lname "yves"
+;                :phone "1234567891"}])
+;      (upsert (-> (on-conflict [:fname :lname :dob]
+;                  (do-update-set :phone))))
+;      (returning :*)
+;      sql/format))
 
-                ))
-    ;(lock :mode :update)
-
-(jdbc/query db-spec
-  (-> (select :fname :lname :dob :phone)
-      (from :person)
-      (where [:and
-                [:= :fname "JIARA"]
-                [:= :lname "HERTZEL"]
-                [:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
-                [:<> :phone "5859012188"]])
-      sql/format))
+; I'm not sure how to do an udate or insert with this library
+;(jdbc/query db-spec
+  ;these operations do npt happen in order?
+  ;(-> (insert-into :person)
+  ;    (values [{:fname "shakrah"
+  ;              :lname "yves"
+  ;              :phone "1234567891"}])
+  ;    ;if update fails then insert
+  ;    (helpers/update :person)
+  ;    (sset {:phone "1112225554"})
+  ;    (where [:and
+  ;              [:= :fname "shakrah"]
+  ;              [:= :lname "yves"]
+  ;              [:<> :phone "1234567899"]])
+      ;(lock :mode :update)
+  ;    sql/format))
+; this does not work because of the cast cannot be inserted here?
+;(jdbc/query db-spec
+;  (-> (select :fname :lname :dob :phone)
+;      (from :person)
+;      (where [:and
+;                [:= :fname "JIARA"]
+;                [:= :lname "HERTZEL"]
+;                ;syntax error at or near ")"
+;                [:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
+;                [:<> :phone "5859012188"]])
+;      sql/format))
 
 (def testSQLstr
   "UPDATE person
