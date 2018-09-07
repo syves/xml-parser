@@ -65,14 +65,11 @@
                               {}
                               (:content member)))))))))
 
-;TODO for each map create a sql query
+
 
 (defn format-date [varrchar] (str/join (str/split varrchar #"-")))
-
 (def str-date (format-date "1935-06-05"))
-(sql/raw ["CAST ('#sql/param str-date AS DATE)'"])
-(sql/format (sql/raw ["CAST ('#sql/param str-date AS DATE)'"]))
-(sql/raw ["CAST ('#sql/param str-date AS DATE)'"])
+(sql/raw ["CAST ('str-date AS DATE)'"])
 
 ;this will not work because there is no support for where clause on constraint.
 ;(jdbc/query db-spec
@@ -101,6 +98,7 @@
   ;              [:<> :phone "1234567899"]])
       ;(lock :mode :update)
   ;    sql/format))
+
 ; this does not work because of the cast cannot be inserted here?
 ;(jdbc/query db-spec
 ;  (-> (select :fname :lname :dob :phone)
@@ -112,29 +110,35 @@
 ;                [:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
 ;                [:<> :phone "5859012188"]])
 ;      sql/format))
+;'5859012134'
+(def small-map (take 3 list-map))
+;({:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "9796740198"} {:firstname "00226501", :lastname "SCHENERLEIN", :date-of-birth "1935-12-10", :phone "5709742596"} {:firstname "00226501", :lastname "SUPRISSE", :date-of-birth "2007-05-10", :phone "5873733594"})
 
-(def testSQLstr
-  "UPDATE person
-      SET phone='5859012134'
-      WHERE
-        fname='JIARA'
-        AND lname='HERTZEL'
-        AND dob='1935-06-05'
-        AND phone!='5859012134';
-    INSERT INTO
-      person(fname, lname, dob, phone)
-    SELECT 'JIARA','HERTZEL','1935-06-05','5859012134'
-       WHERE NOT EXISTS (SELECT * FROM person
-                          WHERE
-                            fname='JIARA'
-                            AND lname='HERTZEL'
-                            AND dob='1935-06-05');")
+(defn sql-str-builder [rmap]
+    (map (fn [rec]
+              [(format "UPDATE person SET phone=%s WHERE fname=%s AND lname=%s AND dob=%s AND phone!=%s ;INSERT INTO person(fname, lname, dob, phone) SELECT %s,%s,%s,%s WHERE NOT EXISTS (SELECT * FROM person WHERE fname=%s AND lname=%s AND dob=%s);"
+              (get rec :phone "")
+              (get rec :firstname "")
+              (get rec :lastname "")
+              (get rec :date-of-birth "")
+              (get rec :phone "")
+              (get rec :firstname "")
+              (get rec :lastname "")
+              (get rec :date-of-birth "")
+              (get rec :phone "")
+              (get rec :firstname "")
+              (get rec :lastname "")
+              (get rec :date-of-birth ""))])
+              rmap))
+
+(sql-str-builder small-map)
+
+(def raw3 "UPDATE person SET phone='5859012666' WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05' AND phone!='5859012666';INSERT INTO person(fname, lname, dob, phone) SELECT 'JIARA','HERTZEL','1935-06-05','5859012666' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05');")
+
+(["UPDATE person SET phone=9796740198 WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01 AND phone!=9796740198 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,MCGREWJR,1936-02-01,9796740198 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01);"] ["UPDATE person SET phone=5709742596 WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10 AND phone!=5709742596 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SCHENERLEIN,1935-12-10,5709742596 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10);"] ["UPDATE person SET phone=5873733594 WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10 AND phone!=5873733594 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SUPRISSE,2007-05-10,5873733594 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10);"])
+
+(def queries (sql-str-builder list-map))
+
+(jdbc/query db-spec [raw3]) ;works
 
 ;inserts are rare in this example case but they emit selects which could slow down the process.
-;UPDATE tableName SET col1 = value WHERE colX = arg1 and colY = arg2;
-   ;IF NOT FOUND THEN
-   ;INSERT INTO tableName values (value, arg1, arg2);
-
-(take 3 list-map)
-
-;output query to file?
