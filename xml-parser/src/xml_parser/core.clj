@@ -1,6 +1,7 @@
 (ns xml-parser.core
 
 (:require [clojure.java.io :as io]
+          [clojure.java.jdbc :as jdbc]
           [clojure.xml :as xml]
           [clojure.zip :as zip]
           ;[clojure.data.xml :refer :all]
@@ -11,6 +12,14 @@
           (:import org.apache.commons.io.input.BOMInputStream
                    org.apache.commons.io.ByteOrderMark
                    java.util.zip.GZIPInputStream))
+
+(def db-spec {:classname "org.postgresql.Driver"
+              :subprotocol "postgresql"
+              :subname "//localhost:5432/testdb"
+              ;; Not needed for a non-secure local database...
+              ;; :user "username"
+              ;; :password "secret"
+              })
 
 (def base "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/")
 (def gzip-filepath (str base "update-file.xml.gz"))
