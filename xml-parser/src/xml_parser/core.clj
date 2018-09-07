@@ -10,7 +10,9 @@
           [clojure.pprint :refer [pprint]]
           [clojure.string :as str]
           [honeysql.core :as sql]
-          [honeysql.helpers :refer :all :as helpers])
+          [honeysql.helpers :refer :all :as helpers]
+          [honeysql-postgres.format :refer :all]
+          [honeysql-postgres.helpers :refer :all])
           (:import org.apache.commons.io.input.BOMInputStream
                    org.apache.commons.io.ByteOrderMark
                    java.util.zip.GZIPInputStream))
@@ -72,37 +74,25 @@
 (sql/format (sql/raw ["CAST ('#sql/param str-date AS DATE)'"]))
 (sql/raw ["CAST ('#sql/param str-date AS DATE)'"])
 
-WHERE NOT EXISTS (SELECT * FROM person
-                   WHERE
-                     fname='JIARA'
-                     AND lname='HERTZEL'
-                     AND dob='1935-06-05')
-
-(sql/format {:exists })
-
-(where [:= :exists {:select *
-                      :from :person
-                      :where
-                      :fname "shakrah"
-                      :lname "yves"
-                    }
-              false])
-}
+(sql/raw ["IF NOT FOUND THEN"])
 ;works but returns no result ?!
 (jdbc/query db-spec
-    (sql/format {:union [(-> (helpers/update :person)
-                             (sset {:phone "1112225554"})
-                             (where [:and
+    (sql/format
+                        (-> (helpers/update :person)
+                            (sset {:phone "1112225554"})
+                            (where [:and
                                        [:= :fname "shakrah"]
                                        [:= :lname "yves"]
                                        [:<> :phone "1234567899"]
-                                       ]))
+                                       ])
                             ;if update fails then insert
-                         (-> (insert-into :person)
-                             (values [{:fname "shakrah"
+                         ;(->
+                            (insert-into :person)
+                            (values [{:fname "shakrah"
                                        :lname "yves"
-                                       :phone "11122244444"}]))]
-                }))
+                                       :phone "11122244444"}]))
+
+                ))
     ;(lock :mode :update)
 
 (jdbc/query db-spec
@@ -114,8 +104,6 @@ WHERE NOT EXISTS (SELECT * FROM person
                 [:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
                 [:<> :phone "5859012188"]])
       sql/format))
-;--> ({:fname "JIARA", :lname "HERTZEL", :dob #inst "1935-06-04T23:00:00.000-00:00", :phone "5859012134"})
-
 
 (def testSQLstr
   "UPDATE person
