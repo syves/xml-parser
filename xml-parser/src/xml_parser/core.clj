@@ -140,7 +140,7 @@
          (jdbc/query db-spec (sql-str-builder rec))
          (catch Exception e (str "caught exception: " (.getMessage e)))
          ))
-         list-map)
+         test-list-map)
 
 (jdbc/query db-spec ["SELECT * FROM person WHERE fname='JIARA' and lname='HERTZEL';"])
 
@@ -149,11 +149,11 @@
 (jdbc/query db-spec ["SELECT * FROM person WHERE fname='00226501' AND lname='MCGREWJR' AND dob='1936-02-01'
 ;"])
 
-(map (fn [rec]
+(time (map (fn [rec]
       (print rec)
       (try
          (jdbc/query db-spec (sql-str-builder rec))
          (catch Exception e (str "caught exception: " (.getMessage e)))
          ))
-         list-map)
+         list-map))
 ;inserts are rare in this example case but they emit selects which could slow down the process.
