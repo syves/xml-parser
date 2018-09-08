@@ -109,10 +109,8 @@
 ;                [:<> :phone "5859012188"]])
 ;      sql/format))
 ;'5859012134'
-(def small-map (take 3 list-map))
 
-(defn sql-str-builder [rmap]
-    (map (fn [rec]
+(defn sql-str-builder [rec]
               [(format "UPDATE person SET phone=%s WHERE fname=%s AND lname=%s AND dob=%s AND phone!=%s ;INSERT INTO person(fname, lname, dob, phone) SELECT %s,%s,%s,%s WHERE NOT EXISTS (SELECT * FROM person WHERE fname=%s AND lname=%s AND dob=%s);"
               (get rec :phone "")
               (get rec :firstname "")
@@ -126,20 +124,17 @@
               (get rec :firstname "")
               (get rec :lastname "")
               (get rec :date-of-birth ""))])
-              rmap))
-
-(def small-query-list (sql-str-builder small-map))
-
-;(["UPDATE person SET phone=9796740198 WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01 AND phone!=9796740198 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,MCGREWJR,1936-02-01,9796740198 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01);"] ["UPDATE person SET phone=5709742596 WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10 AND phone!=5709742596 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SCHENERLEIN,1935-12-10,5709742596 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10);"] ["UPDATE person SET phone=5873733594 WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10 AND phone!=5873733594 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SUPRISSE,2007-05-10,5873733594 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10);"])
 
 (def raw3 "UPDATE person SET phone='5859012666' WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05' AND phone!='5859012666';INSERT INTO person(fname, lname, dob, phone) SELECT 'JIARA','HERTZEL','1935-06-05','5859012666' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05');")
 
-;(take 1500000 (sql-str-builder list-map)))
-
 (jdbc/query db-spec [raw3]) ;works
 
+;(map (fn [rec]
+;         (jdbc/query db-spec (sql-str-builder rec)))
+;         list-map)
+
 (map (fn [rec]
-         (jdbc/query db-spec (sql-str-builder rec)))
-         (list-map))
+          (jdbc/query db-spec (sql-str-builder rec)))
+          (take 3 list-map)
 
 ;inserts are rare in this example case but they emit selects which could slow down the process.
