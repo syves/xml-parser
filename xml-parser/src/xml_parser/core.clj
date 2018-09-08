@@ -88,7 +88,7 @@
                             (get rec :phone "")
                             )])
 
-(def query [records string-builder]
+(defn query [records string-builder]
            (map (fn [rec]
                     (try
                       (jdbc/query db-spec (string-builder rec))

@@ -1,6 +1,7 @@
 (ns xml-parser.core-test
   (:require [clojure.test :refer :all]
-            [xml-parser.core :refer :all]))
+            [xml-parser.core :refer :all]
+            [clojure.java.jdbc :as jdbc]))
 
 (deftest a-test
 
@@ -13,6 +14,8 @@
   ;  (is (=
   ;         (query list-map sql-select-builder)
   ;         ?)))
+  ;TODO synch db and test data
+  (def test-list-map '({:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "1111111111"} {:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "1111111111"} {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "1111111111"}))
 
   (testing "query with updates/inserts sql queries do not return from jdbc, but do update the db."
     (is (=
