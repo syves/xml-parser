@@ -111,7 +111,7 @@
 ;'5859012134'
 
 (defn sql-str-builder [rec]
-              [(format "UPDATE person SET phone=%s WHERE fname=%s AND lname=%s AND dob=%s AND phone!=%s;INSERT INTO person(fname, lname, dob, phone) SELECT %s,%s,%s,%s WHERE NOT EXISTS (SELECT * FROM person WHERE fname=%s AND lname=%s AND dob=%s);"
+              [(format "UPDATE person SET phone='%s' WHERE fname='%s' AND lname='%s' AND dob='%s' AND phone!='%s';INSERT INTO person(fname, lname, dob, phone) SELECT '%s','%s','%s','%s' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s');"
               (get rec :phone "")
               (get rec :firstname "")
               (get rec :lastname "")
@@ -125,28 +125,35 @@
               (get rec :lastname "")
               (get rec :date-of-birth ""))])
 
-(sql-str-builder {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "9796740198"})
+(jdbc/query db-spec (sql-str-builder {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "9796740198"}))
 
-(sql-str-builder (take 1 list-map))
+(jdbc/query db-spec (sql-str-builder (first (take 1 list-map))))
+
 
 (sql-str-builder {:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "9796740198"})
 
-(def raw3
-
-
-(jdbc/query db-spec [raw3]) ;works
-
-;(map (fn [rec]
-;         (jdbc/query db-spec (sql-str-builder rec)))
-;         list-map)
+(def test-list-map '({:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "1111111111"} {:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "1111111111"} {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "1111111111"}))
 
 (map (fn [rec]
-          (jdbc/query db-spec (sql-str-builder rec)))
-              {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "9796740198"})
+      (print rec)
+      (try
+         (jdbc/query db-spec (sql-str-builder rec))
+         (catch Exception e (str "caught exception: " (.getMessage e)))
+         ))
+         list-map)
+
+(jdbc/query db-spec ["SELECT * FROM person WHERE fname='JIARA' and lname='HERTZEL';"])
+
+(jdbc/query db-spec ["SELECT * FROM person WHERE fname='shakrah' and dob='1936-02-01';"])
+
+(jdbc/query db-spec ["SELECT * FROM person WHERE fname='00226501' AND lname='MCGREWJR' AND dob='1936-02-01'
+;"])
+
 (map (fn [rec]
-              (jdbc/query db-spec (sql-str-builder rec)))
-              {:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "9796740198"})
-
-(take 3 list-map)
-
+      (print rec)
+      (try
+         (jdbc/query db-spec (sql-str-builder rec))
+         (catch Exception e (str "caught exception: " (.getMessage e)))
+         ))
+         list-map)
 ;inserts are rare in this example case but they emit selects which could slow down the process.
