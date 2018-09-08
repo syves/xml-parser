@@ -65,51 +65,6 @@
                               {}
                               (:content member)))))))))
 
-(defn format-date [varrchar] (str/join (str/split varrchar #"-")))
-(def str-date (format-date "1935-06-05"))
-(sql/raw ["CAST ('str-date AS DATE)'"])
-
-;this will not work because there is no support for where clause on constraint.
-;(jdbc/query db-spec
-;  (-> (insert-into :person)
-;      (values [{:fname "shakrah"
-;                :lname "yves"
-;                :phone "1234567891"}])
-;      (upsert (-> (on-conflict [:fname :lname :dob]
-;                  (do-update-set :phone))))
-;      (returning :*)
-;      sql/format))
-
-; I'm not sure how to do an udate or insert with this library
-;(jdbc/query db-spec
-  ;these operations do npt happen in order?
-  ;(-> (insert-into :person)
-  ;    (values [{:fname "shakrah"
-  ;              :lname "yves"
-  ;              :phone "1234567891"}])
-  ;    ;if update fails then insert
-  ;    (helpers/update :person)
-  ;    (sset {:phone "1112225554"})
-  ;    (where [:and
-  ;              [:= :fname "shakrah"]
-  ;              [:= :lname "yves"]
-  ;              [:<> :phone "1234567899"]])
-      ;(lock :mode :update)
-  ;    sql/format))
-
-; this does not work because of the cast cannot be inserted here?
-;(jdbc/query db-spec
-;  (-> (select :fname :lname :dob :phone)
-;      (from :person)
-;      (where [:and
-;                [:= :fname "JIARA"]
-;                [:= :lname "HERTZEL"]
-;                ;syntax error at or near ")"
-;                [:= :dob (sql/raw ["CAST ('str-date AS DATE)'"])]
-;                [:<> :phone "5859012188"]])
-;      sql/format))
-;'5859012134'
-
 (defn sql-str-builder [rec]
               [(format "UPDATE person SET phone='%s' WHERE fname='%s' AND lname='%s' AND dob='%s' AND phone!='%s';INSERT INTO person(fname, lname, dob, phone) SELECT '%s','%s','%s','%s' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s');"
               (get rec :phone "")
@@ -128,7 +83,6 @@
 (jdbc/query db-spec (sql-str-builder {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "9796740198"}))
 
 (jdbc/query db-spec (sql-str-builder (first (take 1 list-map))))
-
 
 (sql-str-builder {:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "9796740198"})
 
@@ -149,11 +103,11 @@
 (jdbc/query db-spec ["SELECT * FROM person WHERE fname='00226501' AND lname='MCGREWJR' AND dob='1936-02-01'
 ;"])
 
-(time (map (fn [rec]
-      (print rec)
+(def try-update (map (fn [rec]
       (try
          (jdbc/query db-spec (sql-str-builder rec))
          (catch Exception e (str "caught exception: " (.getMessage e)))
          ))
          list-map))
+
 ;inserts are rare in this example case but they emit selects which could slow down the process.
