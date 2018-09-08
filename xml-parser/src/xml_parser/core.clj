@@ -95,10 +95,3 @@
          (catch Exception e (str "caught exception: " (.getMessage e)))
          ))
          records))
-
-(map (fn [rec]
-               (try
-                  (jdbc/query db-spec (sql-select-builder rec))
-                  (catch Exception e (str "caught exception: " (.getMessage e)))
-                  ))
-                  list-map)

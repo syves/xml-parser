@@ -3,6 +3,17 @@
             [xml-parser.core :refer :all]))
 
 (deftest a-test
+
+  ;(testing "Can process the entire update.xml file"
+  ;  (is (=
+  ;         (query list-map sql-upsert-builder)
+  ;         ?)))
+
+  ;(testing "Can deduce how many upserts/updates should occur from update.xml file"
+  ;  (is (=
+  ;         (query list-map sql-select-builder)
+  ;         ?)))
+
   (testing "query with updates/inserts sql queries do not return from jdbc, but do update the db."
     (is (=
            (query test-list-map sql-upsert-builder)
