@@ -89,9 +89,10 @@
                             )])
 
 (def query [records string-builder]
-  (map (fn [rec]
-      (try
-         (jdbc/query db-spec (string-builder rec))
-         (catch Exception e (str "caught exception: " (.getMessage e)))
-         ))
-         records))
+           (map (fn [rec]
+                    (try
+                      (jdbc/query db-spec (string-builder rec))
+                      (catch Exception e (str "caught exception: "                        (.getMessage e)))))
+                records))
+
+(def test-lein-time (query list-map sql-upsert-builder))

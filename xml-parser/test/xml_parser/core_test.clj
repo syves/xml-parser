@@ -5,8 +5,8 @@
 (deftest a-test
 
   ;(testing "Can process the entire update.xml file"
-  ;  (is (=
-  ;         (query list-map sql-upsert-builder)
+  ;(is (=
+  ;        (query list-map sql-upsert-builder)
   ;         ?)))
 
   ;(testing "Can deduce how many upserts/updates should occur from update.xml file"

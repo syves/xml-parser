@@ -12,4 +12,4 @@
                  [commons-io/commons-io "2.5"]
                  [honeysql "0.9.3"]
                  [nilenso/honeysql-postgres "0.2.4"]]
-  :main xml-parser.core)
+  :main xml-parser.core/test-lein-time)
