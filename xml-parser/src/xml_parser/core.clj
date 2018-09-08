@@ -65,8 +65,6 @@
                               {}
                               (:content member)))))))))
 
-
-
 (defn format-date [varrchar] (str/join (str/split varrchar #"-")))
 (def str-date (format-date "1935-06-05"))
 (sql/raw ["CAST ('str-date AS DATE)'"])
@@ -136,8 +134,12 @@
 
 (def raw3 "UPDATE person SET phone='5859012666' WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05' AND phone!='5859012666';INSERT INTO person(fname, lname, dob, phone) SELECT 'JIARA','HERTZEL','1935-06-05','5859012666' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05');")
 
-(def queries (take 1500000 (sql-str-builder list-map)))
+;(take 1500000 (sql-str-builder list-map)))
 
 (jdbc/query db-spec [raw3]) ;works
+
+(map (fn [rec]
+         (jdbc/query db-spec (sql-str-builder rec)))
+         (list-map))
 
 ;inserts are rare in this example case but they emit selects which could slow down the process.
