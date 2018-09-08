@@ -111,7 +111,7 @@
 ;'5859012134'
 
 (defn sql-str-builder [rec]
-              [(format "UPDATE person SET phone=%s WHERE fname=%s AND lname=%s AND dob=%s AND phone!=%s ;INSERT INTO person(fname, lname, dob, phone) SELECT %s,%s,%s,%s WHERE NOT EXISTS (SELECT * FROM person WHERE fname=%s AND lname=%s AND dob=%s);"
+              [(format "UPDATE person SET phone=%s WHERE fname=%s AND lname=%s AND dob=%s AND phone!=%s;INSERT INTO person(fname, lname, dob, phone) SELECT %s,%s,%s,%s WHERE NOT EXISTS (SELECT * FROM person WHERE fname=%s AND lname=%s AND dob=%s);"
               (get rec :phone "")
               (get rec :firstname "")
               (get rec :lastname "")
@@ -125,7 +125,14 @@
               (get rec :lastname "")
               (get rec :date-of-birth ""))])
 
-(def raw3 "UPDATE person SET phone='5859012666' WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05' AND phone!='5859012666';INSERT INTO person(fname, lname, dob, phone) SELECT 'JIARA','HERTZEL','1935-06-05','5859012666' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05');")
+(sql-str-builder {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "9796740198"})
+
+(sql-str-builder (take 1 list-map))
+
+(sql-str-builder {:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "9796740198"})
+
+(def raw3
+
 
 (jdbc/query db-spec [raw3]) ;works
 
@@ -135,6 +142,11 @@
 
 (map (fn [rec]
           (jdbc/query db-spec (sql-str-builder rec)))
-          (take 3 list-map)
+              {:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "9796740198"})
+(map (fn [rec]
+              (jdbc/query db-spec (sql-str-builder rec)))
+              {:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "9796740198"})
+
+(take 3 list-map)
 
 ;inserts are rare in this example case but they emit selects which could slow down the process.
