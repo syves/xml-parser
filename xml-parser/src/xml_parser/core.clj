@@ -112,7 +112,6 @@
 ;      sql/format))
 ;'5859012134'
 (def small-map (take 3 list-map))
-;({:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "9796740198"} {:firstname "00226501", :lastname "SCHENERLEIN", :date-of-birth "1935-12-10", :phone "5709742596"} {:firstname "00226501", :lastname "SUPRISSE", :date-of-birth "2007-05-10", :phone "5873733594"})
 
 (defn sql-str-builder [rmap]
     (map (fn [rec]
@@ -131,13 +130,13 @@
               (get rec :date-of-birth ""))])
               rmap))
 
-(sql-str-builder small-map)
+(def small-query-list (sql-str-builder small-map))
+
+;(["UPDATE person SET phone=9796740198 WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01 AND phone!=9796740198 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,MCGREWJR,1936-02-01,9796740198 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01);"] ["UPDATE person SET phone=5709742596 WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10 AND phone!=5709742596 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SCHENERLEIN,1935-12-10,5709742596 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10);"] ["UPDATE person SET phone=5873733594 WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10 AND phone!=5873733594 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SUPRISSE,2007-05-10,5873733594 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10);"])
 
 (def raw3 "UPDATE person SET phone='5859012666' WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05' AND phone!='5859012666';INSERT INTO person(fname, lname, dob, phone) SELECT 'JIARA','HERTZEL','1935-06-05','5859012666' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05');")
 
-(["UPDATE person SET phone=9796740198 WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01 AND phone!=9796740198 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,MCGREWJR,1936-02-01,9796740198 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=MCGREWJR AND dob=1936-02-01);"] ["UPDATE person SET phone=5709742596 WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10 AND phone!=5709742596 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SCHENERLEIN,1935-12-10,5709742596 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SCHENERLEIN AND dob=1935-12-10);"] ["UPDATE person SET phone=5873733594 WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10 AND phone!=5873733594 ;INSERT INTO person(fname, lname, dob, phone) SELECT 00226501,SUPRISSE,2007-05-10,5873733594 WHERE NOT EXISTS (SELECT * FROM person WHERE fname=00226501 AND lname=SUPRISSE AND dob=2007-05-10);"])
-
-(def queries (sql-str-builder list-map))
+(def queries (take 1500000 (sql-str-builder list-map)))
 
 (jdbc/query db-spec [raw3]) ;works
 
