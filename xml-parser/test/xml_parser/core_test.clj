@@ -25,7 +25,7 @@
   (testing "query with select sql queries returns results from jdbc."
     (is (=
            (query test-list-map sql-select-builder)
-           (() ({:fname "00226501", :lname "MCGREWJR", :dob #inst "1936-01-31T23:00:00.000-00:00", :phone "9796740198"}) ()))))
+           '(() ({:fname "00226501", :lname "MCGREWJR", :dob #inst "1936-01-31T23:00:00.000-00:00", :phone "9796740198"}) ()))))
 
   (testing "sql-select-builder, should return vector of raw sql."
     (is (=

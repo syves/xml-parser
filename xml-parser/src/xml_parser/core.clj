@@ -95,4 +95,5 @@
                       (catch Exception e (str "caught exception: "                        (.getMessage e)))))
                 records))
 
-(def test-lein-time (query list-map sql-upsert-builder))
+;TODO remove after testing from lein
+(defn test-lein-time [] (query (take 5 list-map) sql-upsert-builder))
