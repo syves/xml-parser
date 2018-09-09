@@ -24,6 +24,8 @@
 (def base "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/")
 (def gzip-filepath (str base "update-file.xml.gz"))
 
+(def test-list-map '({:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "9999999999"} {:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "9999999999"}))
+
 (def bom-array
   (into-array [ByteOrderMark/UTF_16LE
                ByteOrderMark/UTF_16BE
@@ -91,11 +93,12 @@
                                   (get rec :date-of-birth "")
                                   (get rec :phone ""))])
 
-(defn query [records string-builder]
+(defn query-runner [records string-builder]
            (map (fn [rec]
                     (try
                       (jdbc/query db-spec (string-builder rec))
-                      (catch Exception e (str "caught exception: "                        (.getMessage e)))))
+                    (catch Exception e (str "caught exception: "                     (.getMessage e))))
+                    )
                 records))
 
 (defn trans-query [records
