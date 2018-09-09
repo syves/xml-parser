@@ -2,12 +2,9 @@
 
 (:require [clojure.java.io :as io]
           [clojure.java.jdbc :as jdbc]
-          [clojure.xml :as xml]
-          [clojure.zip :as zip]
           [clojure.data.xml :as c-d-xml :refer [parse]]
           [clojure.data.zip.xml :as c-d-z-xml
                 :refer [xml-> xml1-> attr attr= text]]
-          [clojure.pprint :refer [pprint]]
           [clojure.string :as str])
           (:import org.apache.commons.io.input.BOMInputStream
                    org.apache.commons.io.ByteOrderMark
@@ -15,16 +12,18 @@
 
 (def db-spec {:classname "org.postgresql.Driver"
               :subprotocol "postgresql"
-              :subname "//localhost:5432/testdb2"
-              ;; Not needed for a non-secure local database...
-              ;; :user "username"
-              ;; :password "secret"
-              })
+              :subname "//localhost:5432/testdb2"})
 
-(def base "/Users/syves/github.com/syves/lambdawerk-backend-test/xml-parser/resources/")
-(def gzip-filepath (str base "update-file.xml.gz"))
+(def gzip-filepath "./resources/update-file.xml.gz")
 
-(def test-list-map '({:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "9999999999"} {:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "9999999999"}))
+(def test-list-map '({:firstname "JIARA",
+                      :lastname "HERTZEL",
+                      :date-of-birth "1935-06-05",
+                      :phone "9999999999"}
+                     {:firstname "00226501",
+                      :lastname "MCGREWJR",
+                      :date-of-birth "1936-02-01",
+                      :phone "9999999999"}))
 
 (def bom-array
   (into-array [ByteOrderMark/UTF_16LE
@@ -97,8 +96,7 @@
            (map (fn [rec]
                     (try
                       (jdbc/query db-spec (string-builder rec))
-                    (catch Exception e (str "caught exception: "                     (.getMessage e))))
-                    )
+                    (catch Exception e (str "caught exception: " (.getMessage e)))))
                 records))
 
 (defn trans-query [records
