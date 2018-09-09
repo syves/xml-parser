@@ -102,9 +102,11 @@
                    string-builder-upsert
                    string-builder-select]
                    (map (fn [rec]
-                            (try
-                              (jdbc/with-db-transaction [t-con db-spec]
+                            (jdbc/with-db-transaction [t-con db-spec]
+                                (try
                                   (jdbc/query t-con (string-builder-upsert rec))
-                                  (jdbc/query t-con (string-builder-select rec)))
-                                      (catch Exception e (str "caught exception: "                        (.getMessage e)))))
-                                records))
+                                (catch Exception e (str "caught exception: " (.getMessage e))))
+                                (try
+                                  (jdbc/query t-con (string-builder-select rec))
+                                (catch Exception e (str "caught exception: " (.getMessage e)))))
+                            records)))
