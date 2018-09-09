@@ -21,8 +21,10 @@ $ postgres -D pg &
 
 $ createdb testdb2
 
-#start repl and seed database
+#start repl
 $psql testedb2
+
+#create role that appears in sql dump file
 testdb=# create role hans with superuser;
 
 #exit repl
@@ -34,8 +36,11 @@ psql testdb2 --file="/Users/syves/github.com/syves/largeFiles/person.sql"
 #check number of inserts
 testdb=# select count(`*`) from person;
 
-# lein test
+#run tests
+$ lein test
 
+#stop postgres
+pkill postgres
 #-------------------------------------------------------------
 
 ##TODO:
