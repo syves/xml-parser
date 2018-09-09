@@ -39,21 +39,21 @@ testdb=# select count(`*`) from person;
 #-------------------------------------------------------------
 
 ##TODO:
-1. Figure out how to improve speed so that I can process the entire update file. I can process gzipped files on the fly, parse and update db records, but the process is very slow. 
+1. Figure out how to improve speed so that I can process the entire update file. I can process gzipped files on the fly, parse and update db records, but the process is very slow.
 
-1. Put db setup in a script or host.
+2. Put db setup in a script or host.
 
-2. Perhaps figure out how to use jdbc getUpdateCount for logging.
+3. Perhaps figure out how to use jdbc getUpdateCount for logging.
 
-1. Try benchmarks with index on person (fname, lname, dob);
+4. Try benchmarks with index on person (fname, lname, dob);
 
 * creating an index took 4 mins.
 * and is not recommended for db with frequent inserts and updates!
 testdb=# create index person_idx on person (fname, lname, dob);
 
-2. Use upsert once ON CONFLICT constraint actually supports where clauses with multiple columns(since we have not unique constraint, or primary key).
+5. Use upsert once ON CONFLICT constraint actually supports where clauses with multiple columns(since we have not unique constraint, or primary key).
 
-3. Replace simple string interpolation with sql format library honeySql. I got 90% of the way but could not fix compilation errors.
+6. Replace simple string interpolation with sql format library honeySql. I got 90% of the way but could not fix compilation errors.
 
 ## this will not work because there is no support for where clause on constraint.
 ;(jdbc/query db-spec
