@@ -8,14 +8,14 @@
           [clojure.data.zip.xml :as c-d-z-xml
                 :refer [xml-> xml1-> attr attr= text]]
           [clojure.pprint :refer [pprint]]
-          [clojure.string :as str]
+          [clojure.string :as str])
           (:import org.apache.commons.io.input.BOMInputStream
                    org.apache.commons.io.ByteOrderMark
                    java.util.zip.GZIPInputStream))
 
 (def db-spec {:classname "org.postgresql.Driver"
               :subprotocol "postgresql"
-              :subname "//localhost:5432/testdb"
+              :subname "//localhost:5432/testdb2"
               ;; Not needed for a non-secure local database...
               ;; :user "username"
               ;; :password "secret"
@@ -91,5 +91,13 @@
                       (catch Exception e (str "caught exception: "                        (.getMessage e)))))
                 records))
 
-;TODO remove after testing from lein
-;(defn test-lein-time (query list-map sql-upsert-builder))
+(defn trans-query [records
+                   string-builder-upsert
+                   string-builder-select]
+                   (map (fn [rec]
+                            (try
+                              (jdbc/with-db-transaction [t-con db-spec]
+                                  (jdbc/query t-con (string-builder-upsert rec))
+                                  (jdbc/query t-con (string-builder-select rec)))
+                                      (catch Exception e (str "caught exception: "                        (.getMessage e)))))
+                                records))
