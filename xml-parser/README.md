@@ -1,12 +1,17 @@
 # xml-parser
 
+## Personal notes
+I attended Clojure Bridge in 2014 in San Francisco. The community was creative and supportive. I found Clojure to be fun and easy to understand.
+Last fall I got to be a coach and help first time users to understand the concepts. Before this challenge I had never built anything substantial with Clojure.
 
+I had never dealt with XMl data processing, managing memory, working with readers, and very little experience with database interactions. I'm a huge fan of functional programming and have enjoyed working on this challenge. I have learned soo much!  
 
-##notes
-upsert with a where clause is not yet supported. Pr is still open.
-update or insert may have a race condition. Perhaps a table lock could be used.
+That being said there are quite a few things I would do if I had more time.
+I have included a list below.
+(I spent 40+ hours on this project)
 
-## Set up a POSTGRES database at the top level
+## Now lets run the project!
+##1. Set up a POSTGRES database at the top level
 
 #intialize server
 $ initdb pg
@@ -29,7 +34,11 @@ psql testdb2 --file="/Users/syves/github.com/syves/largeFiles/person.sql"
 #check number of inserts
 testdb=# select count(`*`) from person;
 
-TODO:
+# lein test
+
+#-------------------------------------------------------------
+
+##TODO:
 1. Put db setup in a script or host.
 
 2. Perhaps figure out how to use jdbc getUpdateCount for logging.
@@ -37,10 +46,10 @@ TODO:
 1. Try benchmarks with index on person (fname, lname, dob);
 
 * creating an index took 4 mins.
-* and is not reccomended for db with frequent inserts and updates!
+* and is not recommended for db with frequent inserts and updates!
 testdb=# create index person_idx on person (fname, lname, dob);
 
-2. Use upsert once ON CONFLICT constraint actually supports where clauses with multiple collumns(since we have not unique constraint, or primary key).
+2. Use upsert once ON CONFLICT constraint actually supports where clauses with multiple columns(since we have not unique constraint, or primary key).
 
 3. Replace simple string interpolation with sql format library honeySql. I got 90% of the way but could not fix compilation errors.
 
@@ -73,7 +82,7 @@ testdb=# create index person_idx on person (fname, lname, dob);
   ;    sql/format))
 
 ## this does not work because of the cast cannot be inserted here?
-* would need to cast incoming date-of-birth which is a varchar as a date to conform to db type DATE.
+* would need to cast incoming date-of-birth which is a varying character as a date to conform to db type DATE.
 
 ;(jdbc/query db-spec
 ;  (-> (select :fname :lname :dob :phone)
