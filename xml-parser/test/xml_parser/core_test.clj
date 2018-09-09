@@ -33,12 +33,14 @@
       (jdbc/query db-spec (sql-upsert-builder {:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "1111111111"}))
     (catch Exception e (str "caught exception: "                     (.getMessage e)))))
 
-;(deftest test-query-large
-;  (testing "transaction query with updates/inserts followed by select ;shows success.Can process the entire update.xml file"
-;  (def actual (query-runner list-map sql-upsert-builder))
-;  ;(print actual)
-;    (is (= actual
-;           "Can process the entire update.xml file"))))
+;If this completes without GC then I could filter filter and count the result set...print it?
+;Did not complete after two hours!
+(deftest test-query-large
+ (testing "transaction query with updates/inserts followed by select ;shows success.Can process the entire update.xml file"
+  (def actual (query-runner list-map sql-upsert-builder))
+ ;(print actual)
+  (is (= actual
+         "Can process the entire update.xml file"))))
 
 ;I dont think this will ever work because jdbc throws an exception on Successful updates with error :"caught exception: No results were returned by the query."
 ;
