@@ -39,6 +39,8 @@ testdb=# select count(`*`) from person;
 #-------------------------------------------------------------
 
 ##TODO:
+1. Figure out how to improve speed so that I can process the entire update file. I can process gzipped files on the fly, parse and update db records, but the process is very slow. 
+
 1. Put db setup in a script or host.
 
 2. Perhaps figure out how to use jdbc getUpdateCount for logging.
