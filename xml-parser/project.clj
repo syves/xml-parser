@@ -10,6 +10,6 @@
                  [org.clojure/data.xml "0.0.8"]
                  [proto-repl "0.3.1"]
                  [commons-io/commons-io "2.5"]]
-  :main xml-parser.core/query
-  ;/test-lein-time
+  :main xml-parser.core
+  ;records string-builder
   )
