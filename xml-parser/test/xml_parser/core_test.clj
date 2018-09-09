@@ -19,9 +19,9 @@
   (def test-list-map '({:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "1111111111"} {:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "1111111111"}))
   ;{:firstname "shakrah", :lastname "yves", :date-of-birth "1936-02-01", :phone "1111111111"}
 
-  (testing "query with updates/inserts followed by select shows success."
+  (testing "transaction query with updates/inserts followed by select shows success."
     (is (=
-           (trans-query test-list-map sql-upsert-builder sql-select-builder))
+           (trans-query test-list-map sql-upsert-builder sql-select-contraint-builder))
            ""))
 
   (testing "query with updates/inserts sql queries do not return from jdbc, but do update the db."

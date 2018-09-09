@@ -77,12 +77,19 @@
               (get rec :date-of-birth ""))])
 
 (defn sql-select-builder [rec]
-                            [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone!='%s';"
-                            (get rec :firstname "")
-                            (get rec :lastname "")
-                            (get rec :date-of-birth "")
-                            (get rec :phone "")
-                            )])
+                         [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone!='%s';"
+                                  (get rec :firstname "")
+                                  (get rec :lastname "")
+                                  (get rec :date-of-birth "")
+                                  (get rec :phone ""))])
+
+;to check if records were updated from dict
+(defn sql-select-contraint-builder [rec]
+                         [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone='%s';"
+                                  (get rec :firstname "")
+                                  (get rec :lastname "")
+                                  (get rec :date-of-birth "")
+                                  (get rec :phone ""))])
 
 (defn query [records string-builder]
            (map (fn [rec]
