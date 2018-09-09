@@ -18,29 +18,21 @@
 
     (is (=
           (query-runner test-list-map sql-select-contraint-builder)
-          (quote (({:fname "JIARA", :lname "HERTZEL", :dob #inst "1935-06-04T23:00:00.000-00:00", :phone "9999999999"}) ({:fname "00226501", :lname "MCGREWJR", :dob #inst "1936-01-31T23:00:00.000-00:00", :phone "9999999999"})))
+          (quote (({:fname "JIARA", :lname "HERTZEL", :dob #inst "1935-06-04T23:00:00.000-00:00", :phone "9999999999"}) ()))
           )))
 
-    ;Restore state back to value before upate on two people
-    ;revert state; TODO look up original value
-    (def orig-phone-Jiara "foo")
-    (def orig-phone-MCGREWJR "foo")
-
     (try
-      (jdbc/query db-spec (sql-upsert-builder {:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "1111111111"}))
-    (catch Exception e (str "caught exception: "                     (.getMessage e))))
-    (try
-      (jdbc/query db-spec (sql-upsert-builder {:firstname "00226501", :lastname "MCGREWJR", :date-of-birth "1936-02-01", :phone "1111111111"}))
+      (jdbc/query db-spec (sql-upsert-builder {:firstname "JIARA", :lastname "HERTZEL", :date-of-birth "1935-06-05", :phone "5859012134"}))
     (catch Exception e (str "caught exception: "                     (.getMessage e)))))
 
 ;If this completes without GC then I could filter filter and count the result set...print it?
 ;Did not complete after two hours!
-(deftest test-query-large
- (testing "transaction query with updates/inserts followed by select ;shows success.Can process the entire update.xml file"
-  (def actual (query-runner list-map sql-upsert-builder))
+;(deftest test-query-large
+ ;(testing "transaction query with updates/inserts followed by select ;shows success.Can process the entire update.xml file"
+  ;(def actual (query-runner list-map sql-upsert-builder))
  ;(print actual)
-  (is (= actual
-         "Can process the entire update.xml file"))))
+  ;(is (= actual
+  ;       "Can process the entire update.xml file"))))
 
 ;I dont think this will ever work because jdbc throws an exception on Successful updates with error :"caught exception: No results were returned by the query."
 ;
