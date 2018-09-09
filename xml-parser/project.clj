@@ -9,7 +9,7 @@
                  [org.clojure/data.zip "0.1.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [proto-repl "0.3.1"]
-                 [commons-io/commons-io "2.5"]
-                 [honeysql "0.9.3"]
-                 [nilenso/honeysql-postgres "0.2.4"]]
-  :main xml-parser.core/test-lein-time)
+                 [commons-io/commons-io "2.5"]]
+  :main xml-parser.core/query
+  ;/test-lein-time
+  )

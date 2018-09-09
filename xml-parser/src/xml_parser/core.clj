@@ -9,10 +9,6 @@
                 :refer [xml-> xml1-> attr attr= text]]
           [clojure.pprint :refer [pprint]]
           [clojure.string :as str]
-          [honeysql.core :as sql]
-          [honeysql.helpers :refer :all :as helpers]
-          [honeysql-postgres.format :refer :all]
-          [honeysql-postgres.helpers :refer :all])
           (:import org.apache.commons.io.input.BOMInputStream
                    org.apache.commons.io.ByteOrderMark
                    java.util.zip.GZIPInputStream))
@@ -96,4 +92,4 @@
                 records))
 
 ;TODO remove after testing from lein
-(defn test-lein-time [] (query (take 5 list-map) sql-upsert-builder))
+;(defn test-lein-time (query list-map sql-upsert-builder))
