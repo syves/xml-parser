@@ -67,7 +67,7 @@
     (query-builder rec))
         big-map))
 
-(defn sql-upsert-builder [rec]
+(defn singleton-sql-upsert-builder [rec]
               [(format "UPDATE person SET phone='%s' WHERE fname='%s' AND lname='%s' AND dob='%s' AND phone!='%s';INSERT INTO person(fname, lname, dob, phone) SELECT '%s','%s','%s','%s' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s');"
               (get rec :phone "")
               (get rec :firstname "")
@@ -82,36 +82,69 @@
               (get rec :lastname "")
               (get rec :date-of-birth ""))])
 
+(defn sql-upsert-builder [rec]
+              (format "UPDATE person SET phone='%s' WHERE fname='%s' AND lname='%s' AND dob='%s' AND phone!='%s';INSERT INTO person(fname, lname, dob, phone) SELECT '%s','%s','%s','%s' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s');"
+              (get rec :phone "")
+              (get rec :firstname "")
+              (get rec :lastname "")
+              (get rec :date-of-birth "")
+              (get rec :phone "")
+              (get rec :firstname "")
+              (get rec :lastname "")
+              (get rec :date-of-birth "")
+              (get rec :phone "")
+              (get rec :firstname "")
+              (get rec :lastname "")
+              (get rec :date-of-birth "")))
+
+(defn singleton-sql-select-builder [rec]
+  [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone!='%s';"
+            (get rec :firstname "")
+            (get rec :lastname "")
+            (get rec :date-of-birth "")
+            (get rec :phone ""))])
+
 (defn sql-select-builder [rec]
-                         [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone!='%s';"
-                                  (get rec :firstname "")
-                                  (get rec :lastname "")
-                                  (get rec :date-of-birth "")
-                                  (get rec :phone ""))])
+  (format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone!='%s';"
+          (get rec :firstname "")
+          (get rec :lastname "")
+          (get rec :date-of-birth "")
+          (get rec :phone "")))
 
 ;TODO to check if records were updated from dict, move to test?
 (defn sql-select-contraint-builder [rec]
-                         [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone='%s';"
-                                  (get rec :firstname "")
-                                  (get rec :lastname "")
-                                  (get rec :date-of-birth "")
-                                  (get rec :phone ""))])
+  [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone='%s';"
+            (get rec :firstname "")
+            (get rec :lastname "")
+            (get rec :date-of-birth "")
+            (get rec :phone ""))])
 
+;TODO trying to emmit results, but syntax is wrong
 (defn query-runner [records string-builder]
   (map (fn [rec]
-    (try
-      (jdbc/query db-spec (string-builder rec))
-    (catch Exception e (str "caught exception: " (.getMessage e)))))
-  records))
+    ;(try
+      ;try return result sert true
+      (jdbc/query db-spec
+                  (string-builder rec)
+                  #{:as-arrays? true}))
+    ;(catch Exception e (str "caught exception: " (.getMessage e)))))
+      records))
 
 (defn batch-query-runner [queries]
     (try
-      (jdbc/query db-spec queries)
+      (jdbc/db-do-commands db-spec queries)
     (catch Exception e (str "caught exception: " (.getMessage e))))
   )
 
+(def batch10 (batch-query (take 10 list-map) sql-upsert-builder))
+
+(time
+  (batch-query-runner
+    (batch-query (take 10 list-map) sql-upsert-builder)
+    ))
+
 ;'with-db-connection' macro provides the simplest way to reuse connections, without having to add a dependency on an external connection pooling library:
-  (defn batch-query-with-db-con [queries]
+(defn batch-query-with-db-con [queries]
         (jdbc/with-db-connection [db-con db-spec]
           (try
             (jdbc/query db-con queries)
