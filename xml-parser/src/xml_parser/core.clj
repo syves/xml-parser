@@ -8,22 +8,14 @@
           [clojure.string :as str])
           (:import org.apache.commons.io.input.BOMInputStream
                    org.apache.commons.io.ByteOrderMark
-                   java.util.zip.GZIPInputStream))
+                   java.util.zip.GZIPInputStream
+                   java.sql.SQLException))
 
 (def db-spec {:classname "org.postgresql.Driver"
               :subprotocol "postgresql"
               :subname "//localhost:5432/testdb2"})
 
 (def gzip-filepath "./resources/update-file.xml.gz")
-
-(def test-list-map '({:firstname "JIARA",
-                      :lastname "HERTZEL",
-                      :date-of-birth "1935-06-05",
-                      :phone "9999999999"}
-                     {:firstname "00226501",
-                      :lastname "MCGREWJR",
-                      :date-of-birth "1936-02-01",
-                      :phone "9999999999"}))
 
 (def bom-array
   (into-array [ByteOrderMark/UTF_16LE
@@ -82,6 +74,7 @@
               (get rec :lastname "")
               (get rec :date-of-birth ""))])
 
+;TODO no idea how this should be formated.
 (defn sql-upsert-builder [rec]
               (format "UPDATE person SET phone='%s' WHERE fname='%s' AND lname='%s' AND dob='%s' AND phone!='%s';INSERT INTO person(fname, lname, dob, phone) SELECT '%s','%s','%s','%s' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s');"
               (get rec :phone "")
@@ -95,7 +88,25 @@
               (get rec :phone "")
               (get rec :firstname "")
               (get rec :lastname "")
-              (get rec :date-of-birth "")))
+              (get rec :date-of-birth ""))
+              )
+
+(defn sql-updat-then-insert-builder [rec]
+  [(format "UPDATE person SET phone='%s' WHERE fname='%s' AND lname='%s' AND dob='%s' AND phone!='%s';"
+          (get rec :phone "")
+          (get rec :firstname "")
+          (get rec :lastname "")
+          (get rec :date-of-birth "")
+          (get rec :phone ""))
+
+  (format "INSERT INTO person(fname, lname, dob, phone) SELECT '%s','%s','%s','%s' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s');"
+        (get rec :firstname "")
+        (get rec :lastname "")
+        (get rec :date-of-birth "")
+        (get rec :phone "")
+        (get rec :firstname "")
+        (get rec :lastname "")
+        (get rec :date-of-birth ""))])
 
 (defn singleton-sql-select-builder [rec]
   [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone!='%s';"
@@ -130,18 +141,15 @@
     ;(catch Exception e (str "caught exception: " (.getMessage e)))))
       records))
 
+;not a transaction!
 (defn batch-query-runner [queries]
     (try
-      (jdbc/db-do-commands db-spec queries)
-    (catch Exception e (str "caught exception: " (.getMessage e))))
+      (jdbc/db-do-commands db-spec false queries)
+    (catch Exception e
+      ;(catch SQLException e            ;(jdbc/print-sql-exception-chain e)))
+      (str "caught exception: " (.getMessage e))))
   )
 
-(def batch10 (batch-query (take 10 list-map) sql-upsert-builder))
-
-(time
-  (batch-query-runner
-    (batch-query (take 10 list-map) sql-upsert-builder)
-    ))
 
 ;'with-db-connection' macro provides the simplest way to reuse connections, without having to add a dependency on an external connection pooling library:
 (defn batch-query-with-db-con [queries]

@@ -5,6 +5,16 @@
 
 ;builder for a single query
 (comment (deftest test-sql-select-builder
+
+  (def test-list-map '({:firstname "JIARA",
+                        :lastname "HERTZEL",
+                        :date-of-birth "1935-06-05",
+                        :phone "9999999999"}
+                       {:firstname "00226501",
+                        :lastname "MCGREWJR",
+                        :date-of-birth "1936-02-01",
+                        :phone "9999999999"}))
+
   (testing "sql-select-builder, should return vector of raw sql."
     (is (=
           (singleton-sql-select-builder (first (take 1 test-list-map)))
@@ -12,6 +22,16 @@
 
 ;This test is mutating the actual db, shoudl learn how to stub
 (comment (deftest test-query!
+
+  (def test-list-map '({:firstname "JIARA",
+                        :lastname "HERTZEL",
+                        :date-of-birth "1935-06-05",
+                        :phone "9999999999"}
+                       {:firstname "00226501",
+                        :lastname "MCGREWJR",
+                        :date-of-birth "1936-02-01",
+                        :phone "9999999999"}))
+
   (testing "query with small map updates/inserts sql queries updates the db."
 
     ;record to be updated exists
@@ -56,14 +76,22 @@
         ;(is (= (time (query-runner (take 10 list-map) sql-upsert-builder)) "Elapsed time: 0.571054 msecs"))
         (is (= 2 2)))))
 
-(deftest with-db-conn-runtime!
-  (def batch10 (batch-query (take 10 list-map) sql-upsert-builder))
-  (def batch100 (batch-query (take 100 list-map) sql-upsert-builder))
+;do command expects a semi colon seperated string to contain a single query. my update with insert is interpreted at 2 queries.
+(deftest batch-ddl-do-commands-runtime!
+  ;20 queries
+  (def batch10 (flatten (batch-query (take 10 list-map) sql-updat-then-insert-builder)))
+
+  ;200 queries
+  (def batch100 (flatten (batch-query (take 100 list-map) sql-updat-then-insert-builder)))
 
   (testing "test time batch query with ddl do commands."
-    (is (= (time (batch-query-runner batch10)) "Elapsed time: 9.801417 msecs"))
-    ;(is (= (time (batch-query-runner batch100)) "Elapsed time: 0.244202 msecs"))
-    (is (= 2 2))))
+    ;17 seconds
+    (is (= (time (batch-query-runner batch10))
+          "Elapsed time: 17713.305038 msecs")))
+    ;3.129 minutes      
+    (is (= (time (batch-query-runner batch100))
+          "Elapsed time: 187767.486602 msecs"))
+    (is (= 2 2)))
 
 
 (comment (deftest with-db-conn-runtime!
