@@ -10,7 +10,7 @@
           ["SELECT * FROM person WHERE fname='JIARA' AND lname='HERTZEL' AND dob='1935-06-05'AND phone!='9999999999';"]))))
 
 ;This test is mutating the actual db, shoudl learn how to stub
-(deftest test-query!
+(comment (deftest test-query!
   (testing "query with small map updates/inserts sql queries updates the db."
 
     ;record to be updated exists
@@ -39,10 +39,34 @@
     (try
       (jdbc/query db-spec ["delete FROM person WHERE fname='00226501' and lname='MCGREWJR';"])
     (catch Exception e (str "caught exception: "                     (.getMessage e))))
-    ))
+    )))
 
-;Did not complete after two hours!
-;(deftest test-query-large
-; (testing "transaction query with updates/inserts followed by select ;shows success.Can process the entire update.xml file"
-;   (is (= (query-runner list-map sql-upsert-builder)
-;       "Can process the entire update.xml file"))))
+
+    ; I may need to run the three tests with a database state cleanup in between? but I think the first 100 are garbage could try with a select?
+  (deftest query-upseret-runtime!
+      (testing "query with small map updates/inserts time for each query."
+        ;updating and inserting returns only exceptions
+        (is (= (time (query-runner (take 1 list-map) sql-upsert-builder)) 5))
+        (is (= (time (query-runner (take 100 list-map) sql-upsert-builder))   "Elapsed time: 0.014815 msecs"))
+        (is (= (time (query-runner (take 10 list-map) sql-upsert-builder)) 5))
+        (is (= 2 2))))
+
+  (deftest batch-upsert-runtime!
+      (def batch10 (batch-query (take 10 list-map) sql-upsert-builder))
+      (def batch100 (batch-query (take 100 list-map) sql-upsert-builder))
+
+      (testing "test time batch query."
+
+      ;batch with without with-db-connection?
+        (is (= (time (batch-query-runner batch10)) 5))
+        (is (= (time (batch-query-runner batch100)) 5))
+        (is (= 2 2))))
+
+  (deftest with-db-conn-runtime!
+    (def batch10 (batch-query (take 10 list-map) sql-upsert-builder))
+    (def batch100 (batch-query (take 100 list-map) sql-upsert-builder))
+
+    (testing "test time batch query with db-connection."
+      (is (= (time (batch-query-with-db-con batch10)) 5))
+      (is (= (time (batch-query-with-db-con batch100)) 5))
+      (is (= 2 2))))

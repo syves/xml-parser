@@ -45,7 +45,7 @@
         false
         bom-array)))
 
-;op takes 75 sec
+;op takes 75 sec once?
 (def list-map
   (with-open [rdr (bom-reader gzip-filepath)]
     (doall
@@ -61,6 +61,11 @@
                                          (first (:content elem))))
                               {}
                               (:content member)))))))))
+
+(defn batch-query [big-map query-builder]
+  (map (fn [rec]
+    (query-builder rec))
+        big-map))
 
 (defn sql-upsert-builder [rec]
               [(format "UPDATE person SET phone='%s' WHERE fname='%s' AND lname='%s' AND dob='%s' AND phone!='%s';INSERT INTO person(fname, lname, dob, phone) SELECT '%s','%s','%s','%s' WHERE NOT EXISTS (SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s');"
@@ -84,7 +89,7 @@
                                   (get rec :date-of-birth "")
                                   (get rec :phone ""))])
 
-;to check if records were updated from dict
+;TODO to check if records were updated from dict, move to test?
 (defn sql-select-contraint-builder [rec]
                          [(format "SELECT * FROM person WHERE fname='%s' AND lname='%s' AND dob='%s'AND phone='%s';"
                                   (get rec :firstname "")
@@ -93,11 +98,25 @@
                                   (get rec :phone ""))])
 
 (defn query-runner [records string-builder]
-           (map (fn [rec]
-                    (try
-                      (jdbc/query db-spec (string-builder rec))
-                    (catch Exception e (str "caught exception: " (.getMessage e)))))
-                records))
+  (map (fn [rec]
+    (try
+      (jdbc/query db-spec (string-builder rec))
+    (catch Exception e (str "caught exception: " (.getMessage e)))))
+  records))
+
+(defn batch-query-runner [queries]
+    (try
+      (jdbc/query db-spec queries)
+    (catch Exception e (str "caught exception: " (.getMessage e))))
+  )
+
+;'with-db-connection' macro provides the simplest way to reuse connections, without having to add a dependency on an external connection pooling library:
+  (defn batch-query-with-db-con [queries]
+        (jdbc/with-db-connection [db-con db-spec]
+          (try
+            (jdbc/query db-con queries)
+          (catch Exception e (str "caught exception: " (.getMessage e)))))
+      )
 
 (defn trans-query [records
                    string-builder-upsert
