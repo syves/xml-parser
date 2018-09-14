@@ -58,11 +58,12 @@
 
 (def custom-formatter (f/formatter "yyyy-MM-dd"))
 
-(defn to-where-clause [rec] ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+;removed phone number
+(defn to-where-clause [rec] ["fname = ? AND lname = ? AND dob = CAST (? AS DATE)"
 (get rec :firstname "")
 (get rec :lastname "")
 (get rec :date-of-birth "")
-(get rec :phone "")])
+])
 
 (defn update-or-insert!
   [db table rec where-clause]

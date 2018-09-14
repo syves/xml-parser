@@ -9,15 +9,11 @@
   (testing "test conditional transaction batch query"
     (is (=
         (batch-transaction
-        records
+        (take 10 list-map)
         db-spec
         :person
-        (fn [rec] ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
-        (get rec :firstname "")
-        (get rec :lastname "")
-        (get rec :date-of-birth "")
-        (get rec :phone "")])))
-    '(10)))))
+        (fn [rec] (to-where-clause rec)))
+    '((1) (1) (1) (1) (1) (1) (1) (1) (1) (1))))))
 
 (deftest single-conditional-transaction!
   (def rec (first '({:firstname "JIARA",
@@ -29,6 +25,7 @@
       (is (= (time (update-or-insert! db-spec :person
                rec
                ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+
                 (get rec :firstname "")
                 (get rec :lastname "")
                 (get rec :date-of-birth "")
