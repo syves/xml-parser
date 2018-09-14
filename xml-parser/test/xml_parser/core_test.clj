@@ -1,7 +1,8 @@
 (ns xml-parser.core-test
   (:require [clojure.test :refer :all]
             [xml-parser.core :refer :all]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc])
+            (:import java.sql.SQLException))
 
 ;builder for a single query
 (comment (deftest test-sql-select-builder
@@ -94,7 +95,7 @@
     (is (= 2 2))))
 
 (comment
-(deftest with-db-conn-runtime!
+  (deftest with-db-conn-runtime!
   ;20 queries
   (def batch10 (flatten (batch-query (take 10 list-map) sql-updat-then-insert-builder)))
 
@@ -107,8 +108,37 @@
       (is (= 2 2))))
 )
 
-(deftest conditional-transaction!
-  ;todo test conditional update with ddl
+(comment (deftest batch-conditional-transaction!
   (testing "test conditional transaction batch query"
     (is (= (batch-query-with-db-con-2 (take 10 list-map) db-spec :person)
     "foo"))))
+)
+
+(deftest single-conditional-transaction!
+  (def rec (first '({:firstname "JIARA",
+           :lastname "HERTZEL",
+           :date-of-birth "1935-06-05",
+           :phone "9999999999"})))
+
+;this works
+(try
+    (jdbc/update!
+             db-spec
+             :person
+             {:phone (get rec :phone "")}
+             ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+              (get rec :firstname "")
+              (get rec :lastname "")
+              (get rec :date-of-birth "")
+              (get rec :phone "")])
+  (catch SQLException e (jdbc/print-sql-exception-chain e)))
+
+    (testing "test conditional update transaction "
+      (is (= (update-or-insert! db-spec :person
+               rec1
+               ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+                (get rec :firstname "")
+                (get rec :lastname "")
+                (get rec :date-of-birth "")
+                (get rec :phone "")])
+                "foo"))))

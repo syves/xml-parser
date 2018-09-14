@@ -146,21 +146,38 @@
     (try
       (jdbc/db-do-commands db-spec false queries)
     (catch Exception e
-      ;(catch SQLException e            ;(jdbc/print-sql-exception-chain e)))
       (str "caught exception: " (.getMessage e))))
   )
 
 (defn update-or-insert!
   [db table rec where-clause]
   (jdbc/with-db-transaction [t-con db]
-    (let [result (jdbc/update! t-con table where-clause)]
+    (let [result
+      (try
+          (jdbc/update!
+                   db-spec
+                   :person
+                   {:phone (get rec :phone "")}
+                   ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+                    (get rec :firstname "")
+                    (get rec :lastname "")
+                    (get rec :date-of-birth "")
+                    (get rec :phone "")])
+        (catch SQLException e (jdbc/print-sql-exception-chain e)))
       (if (zero? (first result))
-        (jdbc/insert! t-con table)
-        result))))
+        (try
+          (jdbc/insert! t-con
+                      table
+                      [:fname :lname :dob :phone]
+                      [(get rec :firstname "")
+                      (get rec :lastname "")
+                      (get rec :date-of-birth "")
+                      (get rec :phone "")])
+          (catch SQLException e (jdbc/print-sql-exception-chain e))))
+        result)))
 
 (defn batch-query-with-db-con-2 [records db-con table]
     (jdbc/with-db-connection [db-con db-spec]
-        ;for each record ...
         (map
           (fn [rec]
             (update-or-insert!
@@ -174,8 +191,6 @@
               "phone != ?" (str (get rec :phone ""))]))
          records)))
 
-(batch-query-with-db-con-2 (take 10 list-map) db-spec :person)
-
 ;I dont understand error: caught exception: The column index is out of range: 1, number of columns: 0
 (defn batch-query-with-db-con [queries]
         (jdbc/with-db-connection [db-con db-spec]
@@ -184,17 +199,3 @@
           (catch Exception e
             (str "caught exception: " (.getMessage e)))))
       )
-
-
-(defn trans-query [records
-                   string-builder-upsert
-                   string-builder-select]
-                   (map (fn [rec]
-                            (jdbc/with-db-transaction [t-con db-spec]
-                                (try
-                                  (jdbc/query t-con (string-builder-upsert rec))
-                                (catch Exception e (str "caught exception: " (.getMessage e))))
-                                (try
-                                  (jdbc/query t-con (string-builder-select rec))
-                                (catch Exception e (str "caught exception: " (.getMessage e)))))
-                            records)))
