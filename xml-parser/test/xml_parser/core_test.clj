@@ -1,7 +1,10 @@
 (ns xml-parser.core-test
   (:require [clojure.test :refer :all]
             [xml-parser.core :refer :all]
-            [clojure.java.jdbc :as jdbc])
+            [clojure.java.jdbc :as jdbc]
+            [clojure.string :as str]
+            [clj-time.core :as t]
+            [clj-time.format :as f])
             (:import java.sql.SQLException))
 
 ;builder for a single query
@@ -121,8 +124,9 @@
            :phone "9999999999"})))
 
 ;this works
-(try
-    (jdbc/update!
+  (comment
+    (try
+      (jdbc/update!
              db-spec
              :person
              {:phone (get rec :phone "")}
@@ -131,11 +135,28 @@
               (get rec :lastname "")
               (get rec :date-of-birth "")
               (get rec :phone "")])
-  (catch SQLException e (jdbc/print-sql-exception-chain e)))
+      (catch SQLException e (jdbc/print-sql-exception-chain e))))
 
-    (testing "test conditional update transaction "
+(def custom-formatter (f/formatter "yyyy-MM-dd"))
+(f/parse custom-formatter "20100311")
+
+  (try
+    (jdbc/insert!
+      db-spec
+      :person
+      [:fname :lname :dob :phone]
+      [(get rec :firstname "")
+       (get rec :lastname "")
+       ;(java.sql.Date. millisOfDATE) insert millis
+       ;
+       (f/parse custom-formatter (get rec :dob ""))
+       (get rec :phone "")])
+    (catch SQLException e (jdbc/print-sql-exception-chain e)))
+
+
+  (testing "test conditional update transaction "
       (is (= (update-or-insert! db-spec :person
-               rec1
+               rec
                ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
                 (get rec :firstname "")
                 (get rec :lastname "")

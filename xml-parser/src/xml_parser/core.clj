@@ -163,7 +163,7 @@
                     (get rec :lastname "")
                     (get rec :date-of-birth "")
                     (get rec :phone "")])
-        (catch SQLException e (jdbc/print-sql-exception-chain e)))
+        (catch SQLException e (jdbc/print-sql-exception-chain e)))]
       (if (zero? (first result))
         (try
           (jdbc/insert! t-con
@@ -173,10 +173,11 @@
                       (get rec :lastname "")
                       (get rec :date-of-birth "")
                       (get rec :phone "")])
-          (catch SQLException e (jdbc/print-sql-exception-chain e))))
-        result)))
+          (catch SQLException e (jdbc/print-sql-exception-chain e)))
+          result)
+      )))
 
-(defn batch-query-with-db-con-2 [records db-con table]
+(defn batch-query-with-db-con-2 [records db-con table where-clause]
     (jdbc/with-db-connection [db-con db-spec]
         (map
           (fn [rec]
@@ -184,18 +185,5 @@
               db-con
               table
               rec
-              ;TODO make this a function or param?
-              ["fname = ?" (str (get rec :firstname ""))
-              "lname = ?" (str (get rec :lastname ""))
-              "dob = ?"   (str (get rec :date-of-birth ""))
-              "phone != ?" (str (get rec :phone ""))]))
+              where-clause))
          records)))
-
-;I dont understand error: caught exception: The column index is out of range: 1, number of columns: 0
-(defn batch-query-with-db-con [queries]
-        (jdbc/with-db-connection [db-con db-spec]
-          (try
-            (jdbc/query db-con queries)
-          (catch Exception e
-            (str "caught exception: " (.getMessage e)))))
-      )
