@@ -150,14 +150,41 @@
       (str "caught exception: " (.getMessage e))))
   )
 
+(defn update-or-insert!
+  [db table rec where-clause]
+  (jdbc/with-db-transaction [t-con db]
+    (let [result (jdbc/update! t-con table where-clause)]
+      (if (zero? (first result))
+        (jdbc/insert! t-con table)
+        result))))
 
-;'with-db-connection' macro provides the simplest way to reuse connections, without having to add a dependency on an external connection pooling library:
+(defn batch-query-with-db-con-2 [records db-con table]
+    (jdbc/with-db-connection [db-con db-spec]
+        ;for each record ...
+        (map
+          (fn [rec]
+            (update-or-insert!
+              db-con
+              table
+              rec
+              ;TODO make this a function or param?
+              ["fname = ?" (str (get rec :firstname ""))
+              "lname = ?" (str (get rec :lastname ""))
+              "dob = ?"   (str (get rec :date-of-birth ""))
+              "phone != ?" (str (get rec :phone ""))]))
+         records)))
+
+(batch-query-with-db-con-2 (take 10 list-map) db-spec :person)
+
+;I dont understand error: caught exception: The column index is out of range: 1, number of columns: 0
 (defn batch-query-with-db-con [queries]
         (jdbc/with-db-connection [db-con db-spec]
           (try
             (jdbc/query db-con queries)
-          (catch Exception e (str "caught exception: " (.getMessage e)))))
+          (catch Exception e
+            (str "caught exception: " (.getMessage e)))))
       )
+
 
 (defn trans-query [records
                    string-builder-upsert

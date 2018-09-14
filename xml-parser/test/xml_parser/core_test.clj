@@ -77,7 +77,7 @@
         (is (= 2 2)))))
 
 ;do command expects a semi colon seperated string to contain a single query. my update with insert is interpreted at 2 queries.
-(deftest batch-ddl-do-commands-runtime!
+(comment (deftest batch-ddl-do-commands-runtime!
   ;20 queries
   (def batch10 (flatten (batch-query (take 10 list-map) sql-updat-then-insert-builder)))
 
@@ -88,17 +88,27 @@
     ;17 seconds
     (is (= (time (batch-query-runner batch10))
           "Elapsed time: 17713.305038 msecs")))
-    ;3.129 minutes      
+    ;3.129 minutes
     (is (= (time (batch-query-runner batch100))
           "Elapsed time: 187767.486602 msecs"))
-    (is (= 2 2)))
+    (is (= 2 2))))
 
+(comment
+(deftest with-db-conn-runtime!
+  ;20 queries
+  (def batch10 (flatten (batch-query (take 10 list-map) sql-updat-then-insert-builder)))
 
-(comment (deftest with-db-conn-runtime!
-    (def batch10 (batch-query (take 10 list-map) sql-upsert-builder))
-    (def batch100 (batch-query (take 100 list-map) sql-upsert-builder))
+  ;200 queries
+  (def batch100 (flatten (batch-query (take 100 list-map) sql-updat-then-insert-builder)))
 
     (testing "test time batch query with db-connection."
       (is (= (time (batch-query-with-db-con batch10)) "Elapsed time: 9.801417 msecs"))
-      (is (= (time (batch-query-with-db-con batch100)) "Elapsed time: 0.244202 msecs"))
-      (is (= 2 2)))))
+      ;(is (= (time (batch-query-with-db-con batch100)) "Elapsed time: 0.244202 msecs"))
+      (is (= 2 2))))
+)
+
+(deftest conditional-transaction!
+  ;todo test conditional update with ddl
+  (testing "test conditional transaction batch query"
+    (is (= (batch-query-with-db-con-2 (take 10 list-map) db-spec :person)
+    "foo"))))
