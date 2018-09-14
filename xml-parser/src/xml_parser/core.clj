@@ -67,11 +67,7 @@
                    db-spec
                    :person
                    {:phone (get rec :phone "")}
-                   ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
-                    (get rec :firstname "")
-                    (get rec :lastname "")
-                    (get rec :date-of-birth "")
-                    (get rec :phone "")])
+                   where-clause)
         (catch SQLException e (jdbc/print-sql-exception-chain e)))]
       (if (zero? (first result))
       (try
@@ -87,7 +83,7 @@
           result)
       )))
 
-(defn batch-query-with-db-con-2 [records db-con table where-clause]
+(defn batch-transaction [records db-con table where-clause]
     (jdbc/with-db-connection [db-con db-spec]
         (map
           (fn [rec]

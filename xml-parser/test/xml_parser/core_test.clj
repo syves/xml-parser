@@ -7,7 +7,7 @@
 
 (comment (deftest batch-conditional-transaction!
   (testing "test conditional transaction batch query"
-    (is (= (batch-query-with-db-con-2 (take 10 list-map) db-spec :person)
+    (is (= (batch-transaction (take 10 list-map) db-spec :person)
     "foo"))))
 )
 
@@ -25,4 +25,4 @@
                 (get rec :lastname "")
                 (get rec :date-of-birth "")
                 (get rec :phone "")])
-                "foo"))))
+                '(1)))))
