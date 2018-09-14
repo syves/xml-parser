@@ -5,11 +5,19 @@
             [clojure.string :as str])
             (:import java.sql.SQLException))
 
-(comment (deftest batch-conditional-transaction!
+(deftest batch-conditional-transaction!
   (testing "test conditional transaction batch query"
-    (is (= (batch-transaction (take 10 list-map) db-spec :person)
-    "foo"))))
-)
+    (is (=
+        (batch-transaction
+        records
+        db-spec
+        :person
+        (fn [rec] ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+        (get rec :firstname "")
+        (get rec :lastname "")
+        (get rec :date-of-birth "")
+        (get rec :phone "")])))
+    '(10)))))
 
 (deftest single-conditional-transaction!
   (def rec (first '({:firstname "JIARA",
@@ -18,11 +26,13 @@
            :phone "9999999999"})))
 
   (testing "test conditional update transaction "
-      (is (= (update-or-insert! db-spec :person
+      (is (= (time (update-or-insert! db-spec :person
                rec
                ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
                 (get rec :firstname "")
                 (get rec :lastname "")
                 (get rec :date-of-birth "")
                 (get rec :phone "")])
-                '(1)))))
+                ;'(1)
+                "foo"
+                )))))

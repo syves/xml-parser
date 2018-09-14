@@ -58,6 +58,12 @@
 
 (def custom-formatter (f/formatter "yyyy-MM-dd"))
 
+(defn to-where-clause [rec] ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+(get rec :firstname "")
+(get rec :lastname "")
+(get rec :date-of-birth "")
+(get rec :phone "")])
+
 (defn update-or-insert!
   [db table rec where-clause]
   (jdbc/with-db-transaction [t-con db]
@@ -83,13 +89,13 @@
           result)
       )))
 
-(defn batch-transaction [records db-con table where-clause]
-    (jdbc/with-db-connection [db-con db-spec]
+(defn batch-transaction [records db-con table gen-where-clause]
+    ;(jdbc/with-db-connection [db-con db-spec]
         (map
           (fn [rec]
             (update-or-insert!
               db-con
               table
               rec
-              where-clause))
-         records)))
+              (gen-where-clause rec)))
+         records))
