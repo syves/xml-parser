@@ -58,13 +58,10 @@
 (with-open [rdr (bom-reader gzip-filepath)]
   (doall
       ;should this be done in chunks? close resource when done?
-      (time
       (take 100
         (->> rdr
-          ;;Returns a lazy tree of the xml/element struct-map
             parse
             :content
-            ;{:content {member, member...}
             (map (fn [member]
               (let [rec (reduce (fn [acc elem]
                                     (assoc acc
@@ -78,9 +75,7 @@
                       rec
                       (to-where-clause rec))
               )))
-)))))
-
-;(map (fn [member](reduce (fn [acc elem](assoc acc (:tag elem) (first (:content elem)))) {}xx)))
+))))
 
 (def custom-formatter (f/formatter "yyyy-MM-dd"))
 
@@ -114,17 +109,6 @@
         (catch SQLException e (jdbc/print-sql-exception-chain e)))
           result)
       )))
-
-(defn batch-transaction [records db-con table gen-where-clause]
-    ;(jdbc/with-db-connection [db-con db-spec]
-        (map
-          (fn [rec]
-            (update-or-insert!
-              db-con
-              table
-              rec
-              (gen-where-clause rec)))
-         records))
 
 (defn rec-count
            "Query how people are in the person table."
