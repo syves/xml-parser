@@ -39,13 +39,12 @@
         false
         bom-array)))
 
-;op takes 75 sec once?
-(def list-map
+(comment
+  (def list-map
   (with-open [rdr (bom-reader gzip-filepath)]
     (doall
       (take 1500000
         (->> rdr
-             ;;Returns a lazy tree of the xml/element struct-map
              parse
              :content
              (map (fn [member]
@@ -54,16 +53,42 @@
                                          (:tag elem)
                                          (first (:content elem))))
                               {}
-                              (:content member)))))))))
+                              (:content member))))))))))
+
+(with-open [rdr (bom-reader gzip-filepath)]
+  (doall
+      ;should this be done in chunks? close resource when done?
+      (time
+      (take 100
+        (->> rdr
+          ;;Returns a lazy tree of the xml/element struct-map
+            parse
+            :content
+            ;{:content {member, member...}
+            (map (fn [member]
+              (let [rec (reduce (fn [acc elem]
+                                    (assoc acc
+                                            (:tag elem)
+                                            (first (:content elem))))
+                                {}
+                                (:content member))]
+                    (update-or-insert!
+                      db-spec
+                      :person
+                      rec
+                      (to-where-clause rec))
+              )))
+)))))
+
+;(map (fn [member](reduce (fn [acc elem](assoc acc (:tag elem) (first (:content elem)))) {}xx)))
 
 (def custom-formatter (f/formatter "yyyy-MM-dd"))
 
 ;removed phone number
 (defn to-where-clause [rec] ["fname = ? AND lname = ? AND dob = CAST (? AS DATE)"
-(get rec :firstname "")
-(get rec :lastname "")
-(get rec :date-of-birth "")
-])
+  (get rec :firstname "")
+  (get rec :lastname "")
+  (get rec :date-of-birth "")])
 
 (defn update-or-insert!
   [db table rec where-clause]
@@ -100,3 +125,9 @@
               rec
               (gen-where-clause rec)))
          records))
+
+(defn rec-count
+           "Query how people are in the person table."
+           [spec]
+           (let [result (jdbc/query spec "select count(*) from person;")]
+             (:count (first result))))

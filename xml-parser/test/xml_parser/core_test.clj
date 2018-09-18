@@ -5,31 +5,53 @@
             [clojure.string :as str])
             (:import java.sql.SQLException))
 
-(deftest batch-conditional-transaction!
+(comment (deftest batch-conditional-transaction!
   (testing "test conditional transaction batch query"
-    (is (=
-        (batch-transaction
-        (take 10 list-map)
-        db-spec
-        :person
-        (fn [rec] (to-where-clause rec)))
-    '((1) (1) (1) (1) (1) (1) (1) (1) (1) (1))))))
 
+    ;(is (= (rec-count db-spec) 10000000))
+
+    (is (=
+        (count
+          (batch-transaction
+            (take 10 list-map)
+            db-spec
+            :person
+            (fn [rec] (to-where-clause rec))))
+          (10))))
+
+
+    ;(is (= (rec-count db-spec) 10000002)); two records inserted?
+    ;TODO WE should not do any work if the same query is called again!
+    (is (=
+        (count
+          (batch-transaction
+            (take 10 list-map)
+            db-spec
+            :person
+            (fn [rec] (to-where-clause rec))))
+          (0))))
+    )
+
+;we are updating each time which is extremely wasteful!
 (deftest single-conditional-transaction!
   (def rec (first '({:firstname "JIARA",
            :lastname "HERTZEL",
            :date-of-birth "1935-06-05",
            :phone "9999999999"})))
 
-  (testing "test conditional update transaction "
-      (is (= (time (update-or-insert! db-spec :person
-               rec
-               ["fname = ? AND lname = ? AND dob = CAST (? AS DATE) AND phone <> ?"
+  (is (= (rec-count db-spec) 10000000))
 
-                (get rec :firstname "")
-                (get rec :lastname "")
-                (get rec :date-of-birth "")
-                (get rec :phone "")])
-                ;'(1)
-                "foo"
-                )))))
+  (testing "test conditional update transaction "
+      (is (= (update-or-insert! db-spec :person
+               rec
+               (to-where-clause rec))
+               ; we should only insert once. '(1)
+                '(1))))
+    (is (= (rec-count db-spec) 10000000))
+    (is (= (update-or-insert! db-spec :person
+             rec
+             (to-where-clause rec))
+             ; we should only insert once. '(1)
+              '(1))))
+    (is (= (rec-count db-spec) 10000000)) 
+                ))
