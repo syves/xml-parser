@@ -55,13 +55,15 @@
                               {}
                               (:content member))))))))))
 
-(with-open [rdr (bom-reader gzip-filepath)]
+(time
+  (with-open [rdr (bom-reader gzip-filepath)]
   (doall
       ;should this be done in chunks? close resource when done?
-      (take 100
+      (take 150000
         (->> rdr
             parse
             :content
+            ;(take 1000
             (map (fn [member]
               (let [rec (reduce (fn [acc elem]
                                     (assoc acc
@@ -75,7 +77,12 @@
                       rec
                       (to-where-clause rec))
               )))
-))))
+)))))
+
+;without index 1500 records took 32 minutes
+
+;with index 1500 records took 23 seconds! 1000 chunks, this complete operation would take 6.3 hours?
+
 
 (def custom-formatter (f/formatter "yyyy-MM-dd"))
 

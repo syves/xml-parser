@@ -10,27 +10,11 @@
 
     ;(is (= (rec-count db-spec) 10000000))
 
-    (is (=
-        (count
-          (batch-transaction
-            (take 10 list-map)
-            db-spec
-            :person
-            (fn [rec] (to-where-clause rec))))
-          (10))))
+    (is (=))
 
 
     ;(is (= (rec-count db-spec) 10000002)); two records inserted?
-    ;TODO WE should not do any work if the same query is called again!
-    (is (=
-        (count
-          (batch-transaction
-            (take 10 list-map)
-            db-spec
-            :person
-            (fn [rec] (to-where-clause rec))))
-          (0))))
-    )
+)))
 
 ;we are updating each time which is extremely wasteful!
 (deftest single-conditional-transaction!
@@ -53,5 +37,5 @@
              (to-where-clause rec))
              ; we should only insert once. '(1)
               '(1))))
-    (is (= (rec-count db-spec) 10000000)) 
+    (is (= (rec-count db-spec) 10000000))
                 ))

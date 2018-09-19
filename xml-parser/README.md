@@ -12,11 +12,6 @@ substantial with Clojure.
 
 I had never dealt with XML data processing, managing memory, working
 with readers, and very little experience with database interactions.
-I'm a huge fan of functional programming and have enjoyed working on
-this challenge. I have learned soo much!
-
-That being said there are quite a few things I would do if I had more
-time. I have included a list below. (I spent 50+ hours on this project.)
 
 Now let's run the project!
 
@@ -48,6 +43,12 @@ Now let's run the project!
 
     ```console
     $ psql testdb2 --file=person.sql
+    ```
+
+1. Create personIndex (10x faster)
+
+    ```sql
+    CREATE INDEX personIndex ON person (fname, lname, dob);
     ```
 
 1.  Check number of inserts:
