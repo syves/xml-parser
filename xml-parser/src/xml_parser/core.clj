@@ -1,4 +1,5 @@
 (ns xml-parser.core
+  ;TODO review imports to check which ones are still being used.
   (:require [clojure.java.io :as io]
           [clojure.java.jdbc :as jdbc]
           [clojure.data.xml :as c-d-xml :refer [parse]]
@@ -38,10 +39,11 @@
                file)))
         false
         bom-array)))
-
+;This appears to be an attemp
 (comment
   (def list-map
   (with-open [rdr (bom-reader gzip-filepath)]
+    ; TODO confirm the way doall works..
     (doall
       (take 1500000
         (->> rdr
@@ -54,16 +56,16 @@
                                          (first (:content elem))))
                               {}
                               (:content member))))))))))
-
+;TODO: is this time reading really helpful?
 (time
   (with-open [rdr (bom-reader gzip-filepath)]
   (doall
-      ;should this be done in chunks? close resource when done?
+      ;should this be done in chunks? am I negating the benefit
+      ;of using a reader by doall/take?
       (take 150000
         (->> rdr
             parse
             :content
-            ;(take 1000
             (map (fn [member]
               (let [rec (reduce (fn [acc elem]
                                     (assoc acc
@@ -83,6 +85,8 @@
 
 ;with index 1500 records took 23 seconds! 1000 chunks, this complete operation would take 6.3 hours?
 
+;Question: Is the problem in the data reading or in the way I am updating the database?
+;Question: Should I be using batch insertion?
 
 (def custom-formatter (f/formatter "yyyy-MM-dd"))
 
